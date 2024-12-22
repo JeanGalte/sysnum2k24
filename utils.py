@@ -3,6 +3,7 @@ from lib_carotte import *
 def mux4(choice:Variable, v00:Variable, v01:Variable, v10:Variable, v11:Variable) -> Variable:
     c = Select(1, choice)
     return Mux(Select(0, choice), Mux(c, v00, v01), Mux(c, v10, v11))
+
 def mux8(choice:Variable, v000:Variable, v001:Variable, v010:Variable, v011:Variable,
                           v100:Variable, v101:Variable, v110:Variable, v111:Variable) -> Variable:
     c2 = Slice(1, 3, choice)
