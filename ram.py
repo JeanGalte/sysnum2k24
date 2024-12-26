@@ -1,5 +1,5 @@
 from lib_carotte import *
-from utils import add_one
+from utils import *
 
 def sign_extend(target:int, value: Variable, enable: Variable) -> Variable:
     '''Sign extend'''
@@ -44,12 +44,12 @@ def concat_result16(addr:Variable,
                     data110:Variable,
                     data111:Variable
                     ) -> Variable:
-   return mux4(addr,
+   return multimux(addr, [
                Concat(data000, data001),
                Concat(data010, data011),
                Concat(data100, data101),
                Concat(data110, data111)
-               )
+               ])
 
 def ram_manager(RAM_addr_size:int,
                 RAM_read_word_size:Variable,
@@ -86,10 +86,10 @@ def ram_manager(RAM_addr_size:int,
     val101 = RAM(addr_size, 8, addr101, RAM_write_enable101, RAM_write_addr, RAM_write_data101)
     val110 = RAM(addr_size, 8, addr110, RAM_write_enable110, RAM_write_addr, RAM_write_data110)
     val111 = RAM(addr_size, 8, addr111, RAM_write_enable111, RAM_write_addr, RAM_write_data111)
-    val = mux4(RAM_read_word_size,
-               mux8(addr_remain, val000, val001, val010, val011, val100, val101, val110, val111),
+    val = multimux(RAM_read_word_size, [
+               multimux(addr_remain, [val000, val001, val010, val011, val100, val101, val110, val111]),
                concat_result16(Slice(RAM_addr_size-2, RAM_addr_size, RAM_read_addr), val000, val001, val010, val011, val100, val101, val110, val111),
                concat_result32(Select(RAM_addr_size-1, RAM_read_addr), val000, val001, val010, val011, val100, val101, val110, val111),
                concat_result64(val000, val001, val010, val011, val100, val101, val110, val111)
-               )
+               ])
     return sign_extend(64, val, RAM_sign_extend)
