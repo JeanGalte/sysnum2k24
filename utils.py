@@ -1,6 +1,6 @@
 from lib_carotte import *
 
-def add_one(a:Variable):
+def add_one(a:Variable) -> (Variable, Variable):
     '''renvoie un booleen generate et le resultat'''
     size = a.bus_size
     if size == 0:
@@ -14,7 +14,15 @@ def add_one(a:Variable):
     ret_1, partie_gauche1 = add_one(partie_gauche0)
     return retenue & ret_1, Mux(retenue, partie_gauche0, partie_gauche1) + partie_droite
 
-def multimux(choice:Variable, vars:list[Variable]):
+def sign_extend(target:int, value: Variable, enable: Variable) -> Variable:
+    '''Sign extend'''
+    s = Mux(enable, Constant("0"), value[0])
+    res = value
+    for i in range(value.bus_size, target):
+        res = s + res
+    return res
+
+def multimux(choice:Variable, vars:list[Variable]) -> Variable:
     '''This multiplexer is lazy and will not return an error if the provided list
     and choice are incompatible. However, it supports multiplexer with (not a power
     of 2) entries. It selects the entry by its index in the provided list.'''

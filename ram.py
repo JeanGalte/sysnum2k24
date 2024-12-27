@@ -1,47 +1,16 @@
 from lib_carotte import *
 from utils import *
 
-def sign_extend(target:int, value: Variable, enable: Variable) -> Variable:
-    '''Sign extend'''
-    s = Mux(value[value.bus_size-1], Constant("0"), enable)
-    res = value
-    for i in range(value.bus_size, target):
-        res = s + res
-    return res
-
-def concat_result32(addr:Variable,
-                    data000:Variable,
-                    data001:Variable,
-                    data010:Variable,
-                    data011:Variable,
-                    data100:Variable,
-                    data101:Variable,
-                    data110:Variable,
-                    data111:Variable
-                    ) -> Variable:
-    return Mux(addr,
-               data000 + data001 + data010 + data011,
-               data100 + data101 + data110 + data111,
-               )
-def concat_result16(addr:Variable,
-                    data000:Variable,
-                    data001:Variable,
-                    data010:Variable,
-                    data011:Variable,
-                    data100:Variable,
-                    data101:Variable,
-                    data110:Variable,
-                    data111:Variable
-                    ) -> Variable:
-   return multimux(addr, [
-               data000 + data001,
-               data010 + data011,
-               data100 + data101,
-               data110 + data111
-               ])
-
-def cycle(k:int, l:list[Variable]):
+def cycle(k:int, l:list[Variable]) -> list[Variable]:
     return l[len(l)-k:len(l)] + l[0:len(l)-k]
+
+def concat_list(l:list[Variable]) -> Variable:
+    if len(l) == 1:
+        return l[0]
+    return concat_list(l[:len(l)//2]) + concat_list(l[len(l)//2:])
+
+def concat_result(choice:Variable, vars:list[Variable]) -> Variable:
+    return multimux(choice, [concat_list(cycle(len(vars)-i, vars)) for i in range(len(vars))])
 
 def ram_manager(RAM_addr_size:int,
                 RAM_read_word_size:Variable,
@@ -74,7 +43,7 @@ def ram_manager(RAM_addr_size:int,
 
     # Déterminer les adresses d'écriture, comme pour la lecture
     waddr = RAM_write_addr[0:addr_size]
-    waddr_remain = RAM_read_addr[addr_size:RAM_addr_size]
+    waddr_remain = RAM_write_addr[addr_size:RAM_addr_size]
     waddr_remain0 = waddr_remain[0]
     waddr_remain1 = waddr_remain[1]
     waddr_remain2 = waddr_remain[2]
@@ -110,11 +79,11 @@ def ram_manager(RAM_addr_size:int,
     # Déterminer où on écrit (c'est pareil que pour voir ce que l'on écrit)
     wws0 = RAM_write_word_size[0]
     wws1 = RAM_write_word_size[1]
-    re00 = RAM_write_enable
-    re01 = RAM_write_enable & (wws0 | wws1)
-    re10 = RAM_write_enable & wws0
-    re11 = RAM_write_enable & wws0 & wws1
-    l = [re00, re11, re11, re11, re11, re10, re10, re01]
+    we00 = RAM_write_enable
+    we01 = RAM_write_enable & (wws0 | wws1)
+    we10 = RAM_write_enable & wws0
+    we11 = RAM_write_enable & wws0 & wws1
+    l = [we00, we11, we11, we11, we11, we10, we10, we01]
     RAM_write_enable000 = multimux(waddr_remain, cycle(0, l))
     RAM_write_enable001 = multimux(waddr_remain, cycle(1, l))
     RAM_write_enable010 = multimux(waddr_remain, cycle(2, l))
@@ -123,7 +92,6 @@ def ram_manager(RAM_addr_size:int,
     RAM_write_enable101 = multimux(waddr_remain, cycle(5, l))
     RAM_write_enable110 = multimux(waddr_remain, cycle(6, l))
     RAM_write_enable111 = multimux(waddr_remain, cycle(7, l))
-    
 
     # Nos 8 modules de RAM
     val000 = RAM(addr_size, 8, addr000, RAM_write_enable000, waddr000, RAM_write_data000)
@@ -134,21 +102,11 @@ def ram_manager(RAM_addr_size:int,
     val101 = RAM(addr_size, 8, addr101, RAM_write_enable101, waddr101, RAM_write_data101)
     val110 = RAM(addr_size, 8, addr110, RAM_write_enable110, waddr110, RAM_write_data110)
     val111 = RAM(addr_size, 8, addr, RAM_write_enable111, waddr, RAM_write_data111)
+    
+    val = concat_result(addr_remain, [val000, val001, val010, val011, val100, val101, val110, val111])
     return multimux(RAM_read_word_size, [
-               sign_extend(
-                   64,
-                   multimux(addr_remain, [val000, val001, val010, val011, val100, val101, val110, val111]),
-                   RAM_sign_extend
-               ),
-               sign_extend(
-                   64,
-                   concat_result16(RAM_read_addr[RAM_addr_size-2:RAM_addr_size], val000, val001, val010, val011, val100, val101, val110, val111),
-                   RAM_sign_extend
-               ),
-               sign_extend(
-                   64,
-                   concat_result32(RAM_read_addr[RAM_addr_size-1], val000, val001, val010, val011, val100, val101, val110, val111),
-                   RAM_sign_extend
-               ),
-               val000 + val001 + val010 + val011 + val100 + val101 + val110 + val111
-               ])
+           sign_extend(64, val[0:8], RAM_sign_extend),
+           sign_extend(64, val[0:16], RAM_sign_extend),
+           sign_extend(64, val[0:32], RAM_sign_extend),
+           val
+       ])
