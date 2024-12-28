@@ -9,23 +9,24 @@ def add_one(a:Variable) -> (Variable, Variable):
         return a, ~a
     l = size//2
     r = size - l
-    partie_gauche0 = a[0:l]
-    retenue, partie_droite = add_one(a[l:size])
-    ret_1, partie_gauche1 = add_one(partie_gauche0)
-    return retenue & ret_1, Mux(retenue, partie_gauche0, partie_gauche1) + partie_droite
+    partie_droite0 = a[l:size]
+    ret_0, partie_droite1 = add_one(partie_droite0)
+    retenue, partie_gauche = add_one(a[0:l])
+    return retenue & ret_0, partie_gauche + Mux(retenue, partie_droite0, partie_droite1)
 
 def sign_extend(target:int, value: Variable, enable: Variable) -> Variable:
     '''Sign extend'''
-    s = Mux(enable, Constant("0"), value[0])
+    s = Mux(enable, Constant("0"), value[value.bus_size-1])
     res = value
     for i in range(value.bus_size, target):
-        res = s + res
+        res = res + s
     return res
 
 def multimux(choice:Variable, vars:list[Variable]) -> Variable:
     '''This multiplexer is lazy and will not return an error if the provided list
     and choice are incompatible. However, it supports multiplexer with (not a power
-    of 2) entries. It selects the entry by its index in the provided list.'''
+    of 2) entries. It selects the entry by its index in the provided list
+    (little endian).'''
     size = len(vars)
     bw = choice.bus_size
     if size == 0:
@@ -36,10 +37,10 @@ def multimux(choice:Variable, vars:list[Variable]) -> Variable:
         if bw == 1:
             choice_bis = choice
         else:
-            choice_bis = choice[bw-1]
+            choice_bis = choice[0]
         return Mux(choice_bis, vars[0], vars[1])
-    new_choice = choice[0:bw-1]
-    return Mux(choice[bw-1],
+    new_choice = choice[1:bw]
+    return Mux(choice[0],
         multimux(new_choice, [vars[i] for i in range(0, size, 2)]),
         multimux(new_choice, [vars[i] for i in range(1, size, 2)])
     )
