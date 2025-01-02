@@ -26,6 +26,7 @@ rule lexer = parse
   | "xori" { OPI Xor }
   | "srli" { OPI Srl }
   | "srai" { OPI Sra }
+  | ['0' - '9']* as s { IMM (int_of_string s) }
   | ',' { COMMA }
   | 'x' (['0'-'9']+ as s)
     { let n = int_of_string s in
