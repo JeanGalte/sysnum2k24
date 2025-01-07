@@ -13,11 +13,10 @@ def concat_result(choice:Variable, vars:list[Variable]) -> Variable:
     return multimux(choice, [concat_list(cycle(len(vars)-i, vars)) for i in range(len(vars))])
 
 def ram_manager(RAM_addr_size:int,
-                RAM_read_word_size:Variable,
+                RAM_word_size:Variable,
                 RAM_sign_extend:Variable,
                 RAM_read_addr: Variable,
                 RAM_write_enable:Variable,
-                RAM_write_word_size:Variable,
                 RAM_write_addr:Variable,
                 RAM_write_data:Variable) -> Variable:
     '''RAM manager implementation; word size is expected as 00 -> 8, 10 -> 16, 01 -> 32, 11 -> 64;
@@ -65,8 +64,8 @@ def ram_manager(RAM_addr_size:int,
     RAM_write_datal = cycle(1, [RAM_write_data[i:i+8] for i in range(0, 64, 8)][::-1])
 
     # Déterminer où on écrit (c'est pareil que pour voir ce que l'on écrit)
-    wws0 = RAM_write_word_size[0]
-    wws1 = RAM_write_word_size[1]
+    wws0 = RAM_word_size[0]
+    wws1 = RAM_word_size[1]
     we00 = RAM_write_enable
     we10 = RAM_write_enable & (wws0 | wws1)
     we01 = RAM_write_enable & wws1
@@ -84,9 +83,13 @@ def ram_manager(RAM_addr_size:int,
             waddrl[i],                                             # write_address
             multimux(waddr_remain, cycle(i, RAM_write_datal))      # write_data
         ))
+    for i in range(8):
+        vall[i].set_as_output("rm" + str(i))
+        addrl[i].set_as_output("ad" + str(i))
+        waddrl[i].set_as_output("wad" + str(i))
     
     val = concat_result(addr_remain, vall)
-    return multimux(RAM_read_word_size, [
+    return multimux(RAM_word_size, [
            sign_extend(64, val[0:8], RAM_sign_extend),
            sign_extend(64, val[0:16], RAM_sign_extend),
            sign_extend(64, val[0:32], RAM_sign_extend),

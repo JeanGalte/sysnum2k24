@@ -1,7 +1,11 @@
 from lib_carotte import *
 from registers import *
+from utils import *
+import ram
 
 ARITH_PREFIX = 0b10011
+LOAD_PREFIX = 0b0000011
+STORE_PREFIX = 0b0100011
 LUI = 0b0110111
 
 # À modifier quand on aura fait l'ALU
@@ -37,6 +41,12 @@ def imm_gen(instr):
         extension = extension + extension
     return instr[20:] + extension[:52]
 
+def imm_gen_alt(instr):
+    extension = instr[31]
+    for _ in range(6):
+        extension = extension + extension
+    return instr[7:12] + instr[25:] + extension[:52]
+
 def big_imm_gen(instr):
     extension = instr[31]
     for _ in range(5):
@@ -55,7 +65,7 @@ def decoder():
     funct7 = instr[30]
 
     lui = eq_const(opcode, LUI, 7)
-    rw = eq_const(opcode, ARITH_PREFIX, 5) | lui
+    rw = eq_const(opcode, ARITH_PREFIX, 5) | lui | eq_const(opcode, LOAD_PREFIX, 7)
     # registers
     bigone = Constant("1" * 64)
     bigzero = Constant("0" * 64)
@@ -72,7 +82,25 @@ def decoder():
     in2 = Mux(instr[5], imm_gen(instr), rd2)
     alu_out, zero = alu_mini(rd1, in2, funct7, funct3)
 
-    wd = Mux(lui, alu_out, big_imm_gen(instr))
+    # ram
+    ram_write2reg = eq_const(opcode, LOAD_PREFIX, 7)
+    ram_write_en = eq_const(opcode, STORE_PREFIX, 7)
+
+    ram_write_en.set_as_output("ram_write_en")
+    ram_word_size = instr[12:14]
+    ram_sign_extend = Not(instr[15])
+    ram_read_addr, _ = adder(rd1, imm_gen(instr), Constant("0"))
+    ram_read_addr.set_as_output("ram_read_addr")
+    rd2.set_as_output("rd2")
+    ram_write_addr, _ = adder(rd1, imm_gen_alt(instr), Constant("0"))
+    ram_write_addr.set_as_output("ram_write_addr")
+    ram_write_data = rd2
+
+    ram_word_size.set_as_output("ram_word_size")
+    ram_out = ram.ram_manager(10, ram_word_size, ram_sign_extend, ram_read_addr[:16], ram_write_en, ram_write_addr[:16], rd2)
+
+    # ram_out = Constant(64 * "1")
+    wd = multimux(lui + ram_write2reg, [alu_out, big_imm_gen(instr), ram_out, Constant("0" * 64)])
 
 def main():
     allow_ribbon_logic_operations(True)
