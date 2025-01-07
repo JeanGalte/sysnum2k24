@@ -24,3 +24,8 @@ let instruction = function
   | Opi (op, x1, i, x3) ->
     0b0010011 lor (x3 lsl 7) lor (OMap.find op funct3 lsl 12) lor
     (x1 lsl 15) lor (i lsl 20)
+  | Load (size, i, x1, x3) ->
+    0b0000011 lor (x3 lsl 7) lor (size lsl 12) lor (x1 lsl 15) lor (i lsl 20)
+  | Store (size, x2, i, x1) ->
+    0b0100011 lor ((i land 0b111) lsl 7) lor (size lsl 12) lor (x1 lsl 15) lor
+    (x2 lsl 20) lor ((i lsr 4) lsl 25)
