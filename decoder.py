@@ -2,6 +2,7 @@ from lib_carotte import *
 from registers import *
 
 ARITH_PREFIX = 0b10011
+LUI = 0b0110111
 
 # À modifier quand on aura fait l'ALU
 def full_adder(a: Variable, b: Variable, c: Variable) -> typing.Tuple[Variable, Variable]:
@@ -31,19 +32,30 @@ def alu_mini(in1, in2, funct7, funct3):
     return res, zero
 
 def imm_gen(instr):
-    return instr[20:] + Constant("0" * 52)
+    extension = instr[31]
+    for _ in range(6):
+        extension = extension + extension
+    return instr[20:] + extension[:52]
+
+def big_imm_gen(instr):
+    extension = instr[31]
+    for _ in range(5):
+        extension = extension + extension
+    return Constant("0" * 12) + instr[12:] + extension
 
 def decoder():
     rpc = pc()
     instr = ROM(16, 32, rpc)
+    opcode = instr[0:7]
+
     rr1 = instr[15:20]
     rr2 = instr[20:25]
     wr = instr[7:12]
-    opcode = instr[0:7]
-    rw = eq_const(opcode, ARITH_PREFIX, 5)
     funct3 = instr[12:15]
     funct7 = instr[30]
 
+    lui = eq_const(opcode, LUI, 7)
+    rw = eq_const(opcode, ARITH_PREFIX, 5) | lui
     # registers
     bigone = Constant("1" * 64)
     bigzero = Constant("0" * 64)
@@ -58,7 +70,9 @@ def decoder():
         r.set_as_output("r" + str(i))
 
     in2 = Mux(instr[5], imm_gen(instr), rd2)
-    wd, zero = alu_mini(rd1, in2, funct7, funct3)
+    alu_out, zero = alu_mini(rd1, in2, funct7, funct3)
+
+    wd = Mux(lui, alu_out, big_imm_gen(instr))
 
 def main():
     allow_ribbon_logic_operations(True)
