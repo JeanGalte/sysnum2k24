@@ -1,9 +1,6 @@
 from lib_carotte import *
 from utils import *
 
-# à enlever à la toute fin, si c'est appelé dans la fonction principale
-allow_ribbon_logic_operations(True)
-
 def log2i(n):
   '''ceil(log2(n)), not optimized'''
   if n==1:
@@ -97,7 +94,3 @@ def alu(a:Variable, b:Variable, funct3:Variable, funct7:Variable) -> Variable:
     aorb,
     aandb
   ])
-
-def main():
-  c = alu(Input(8), Input(8), Input(3), Constant(5*"0")+Input(1)+Constant("0"))
-  c.set_as_output("result")
