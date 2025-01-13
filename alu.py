@@ -48,7 +48,7 @@ def sll(a:Variable, b:Variable) -> Variable:
     Constant("0"*n)
   )
 
-def sral(a:Variable, b:Variable, funct7:Variable) -> Variable:
+def srl(a:Variable, b:Variable, funct7:Variable) -> Variable:
   '''shift right logical, assuming n is a power of 2'''
   n = a.bus_size
   k = log2i(n-1)
@@ -63,6 +63,15 @@ def sral(a:Variable, b:Variable, funct7:Variable) -> Variable:
     multimux_be(b[n-k:n], res),
     fill
   )
+
+def slar(a:Variable, b:Variable) -> Variable:
+    '''shift left "arithmetic", equivalent to logical shift left'''
+    sll(a,b)
+
+def srar(a:Variable, b:Variable, funct7:Variable) -> Variable:
+    '''shift right arithmetic'''
+    x = a[0:1]
+    return (x + srl(a,b,funct7)) 
 
 def slt(a:Variable, b:Variable, aminusb:Variable) -> Variable:
   '''if a<b then 1 else 0'''
