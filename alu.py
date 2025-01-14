@@ -48,7 +48,7 @@ def sll(a:Variable, b:Variable) -> Variable:
     Constant("0"*n)
   )
 
-def sral(a:Variable, b:Variable, funct7:Variable) -> Variable:
+def srl(a:Variable, b:Variable, funct7:Variable) -> Variable:
   '''shift right logical, assuming n is a power of 2'''
   n = a.bus_size
   k = log2i(n-1)
