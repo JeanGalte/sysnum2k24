@@ -9,11 +9,11 @@ def log2i(n):
     n = n-1
   return 1+log2i(n//2)
 
-def propgen(aandb:Variable, aorb:Variable) -> tuple[list[Variable], list[Variable]]:
+def propgen(aandb:list[Variable], aorb:list[Variable]) -> tuple[list[Variable], list[Variable]]:
   '''returns the list of propagates and generates for blocs of aligned 2**k bits'''
-  n = aorb.bus_size
+  n = len(aorb)
   if n == 1:
-    return [aorb], [aandb]
+    return aorb, aandb
   m = n//2
   pd, gd = propgen(aandb[m:n], aorb[m:n])
   pg, gg = propgen(aandb[0:m], aorb[0:m])
@@ -25,14 +25,14 @@ def propgen(aandb:Variable, aorb:Variable) -> tuple[list[Variable], list[Variabl
 
 def add_aux(p:list[Variable], g:list[Variable], axorb:Variable, retenue:Variable) -> Variable:
   '''returns the sum of a and b and a carry given propagates, generates, a^b'''
-  n = axorb.bus_size
+  n = len(axorb)
   m = len(p)//2
   if n == 1:
-    return axorb ^ retenue
+    return axorb[0] ^ retenue
   retg = (retenue & p[-2]) | g[-2]
   return add_aux(p[:m], g[:m], axorb[0:n//2], retg) + add_aux(p[m:-1], g[m:-1], axorb[n//2:n], retenue)
 
-def add(axorb:Variable, aorb:Variable, aandb:Variable, retenue:Variable) -> tuple[Variable, Variable]:
+def add(axorb:list[Variable], aorb:list[Variable], aandb:list[Variable], retenue:Variable) -> tuple[Variable, Variable]:
   '''carry-look-ahead 2**n bits adder'''
   p, g = propgen(aandb, aorb)
   overflow = (retenue & p[-1]) | g[-1]
@@ -44,7 +44,7 @@ def sll(a:Variable, b:Variable) -> Variable:
   k = log2i(n-1)
   return Mux(
     is_not_null(b[0:n-k]),
-    multimux_be(b[n-k:n], [a]+[a[i:n]+Constant("0"*i) for i in range(1, n)]),
+    multimux_be([b[i] for i in range(n-k,n)], [a]+[a[i:n]+Constant("0"*i) for i in range(1, n)]),
     Constant("0"*n)
   )
 
@@ -60,7 +60,7 @@ def sral(a:Variable, b:Variable, funct7:Variable) -> Variable:
     fill = fill+letter
   return Mux(
     is_not_null(b[0:n-k]),
-    multimux_be(b[n-k:n], res),
+    multimux_be([b[i] for i in range(n-k,n)], res),
     fill
   )
 
@@ -73,18 +73,18 @@ def sltu(a:Variable, b:Variable, aminusb:Variable) -> Variable:
   return Constant("0"*(a.bus_size-1)) + ((~a[0] & b[0]) | (~(a[0]^b[0]) & aminusb[0]))
 
 def alu(a:Variable, b:Variable, funct3:Variable, funct7:Variable) -> Variable:
-  funct7 = funct7[5]
   funct30 = funct3[0]
   funct31 = funct3[1]
   funct32 = funct3[2]
+  n = a.bus_size
   # ensures that b2 = b when add/xor/and/or and b2 = -b when sub/slt/sltu
   isnotsub = funct32 | (~funct7 & ~funct31)
   b2 = Mux(isnotsub, ~b, b)
   aorb = a | b2
   aandb = a & b2
   axorb = a ^ b2
-  aplusb, overflow = add(axorb, aorb, aandb, ~isnotsub)
-  return multimux(funct3, [
+  aplusb, overflow = add([axorb[i] for i in range(n)], [aorb[i] for i in range(n)], [aandb[i] for i in range(n)], ~isnotsub)
+  return multimux([funct30, funct31, funct32], [
     aplusb,
     sll(a, b),
     slt(a, b, aplusb),
@@ -94,3 +94,7 @@ def alu(a:Variable, b:Variable, funct3:Variable, funct7:Variable) -> Variable:
     aorb,
     aandb
   ])
+
+# def main():
+#   allow_ribbon_logic_operations(True)
+#   alu(Input(64), Input(64), Input(3), Input(1)).set_as_output("aplusb")
