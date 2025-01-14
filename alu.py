@@ -19,8 +19,8 @@ def propgen(aandb:list[Variable], aorb:list[Variable]) -> tuple[list[Variable], 
   pg, gg = propgen(aandb[0:m], aorb[0:m])
   p = pg + pd
   g = gg + gd
-  p.append(pg[-1] & pd[-1])
-  g.append(gg[-1] | (pg[-1] & gd[-1]))
+  p.append(pd[-1] & pg[-1])
+  g.append(gd[-1] | (pd[-1] & gg[-1]))
   return p, g
 
 def add_aux(p:list[Variable], g:list[Variable], axorb:Variable, retenue:Variable) -> Variable:
@@ -29,8 +29,8 @@ def add_aux(p:list[Variable], g:list[Variable], axorb:Variable, retenue:Variable
   m = len(p)//2
   if n == 1:
     return axorb[0] ^ retenue
-  retg = (retenue & p[-2]) | g[-2]
-  return add_aux(p[:m], g[:m], axorb[0:n//2], retg) + add_aux(p[m:-1], g[m:-1], axorb[n//2:n], retenue)
+  retd = (retenue & p[m-1]) | g[m-1]
+  return add_aux(p[:m], g[:m], axorb[0:n//2], retenue) + add_aux(p[m:-1], g[m:-1], axorb[n//2:n], retd)
 
 def add(axorb:list[Variable], aorb:list[Variable], aandb:list[Variable], retenue:Variable) -> tuple[Variable, Variable]:
   '''carry-look-ahead 2**n bits adder'''
@@ -44,19 +44,19 @@ def sll(a:Variable, b:Variable) -> Variable:
   k = log2i(n-1)
   return Mux(
     is_not_null(b[0:n-k]),
-    multimux_be([b[i] for i in range(n-k,n)], [a]+[a[i:n]+Constant("0"*i) for i in range(1, n)]),
+    multimux_be([b[i] for i in range(n-k,n)], [a]+[Constant("0"*i)+a[i:n] for i in range(1, n)]),
     Constant("0"*n)
   )
 
-def srl(a:Variable, b:Variable, funct7:Variable) -> Variable:
-  '''shift right logical, assuming n is a power of 2'''
+def sral(a:Variable, b:Variable, funct7:Variable) -> Variable:
+  '''shift right arithmetic/logical, assuming n is a power of 2'''
   n = a.bus_size
   k = log2i(n-1)
-  letter = funct7 & a[0]
+  letter = funct7 & a[n-1]
   fill = letter
   res = [a]
   for i in range(1, n):
-    res.append(fill+a[0:n-i])
+    res.append(a[0:n-i]+fill)
     fill = fill+letter
   return Mux(
     is_not_null(b[0:n-k]),
@@ -95,6 +95,3 @@ def alu(a:Variable, b:Variable, funct3:Variable, funct7:Variable) -> Variable:
     aandb
   ])
 
-# def main():
-#   allow_ribbon_logic_operations(True)
-#   alu(Input(64), Input(64), Input(3), Input(1)).set_as_output("aplusb")
