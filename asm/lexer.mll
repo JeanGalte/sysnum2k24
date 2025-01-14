@@ -3,9 +3,11 @@
   open Syntax
 }
 
+let ident = (['a'-'z'] | ['A'-'Z']) (['a'-'z'] | ['A'-'Z'] | '_' | ['0'-'9'])*
+
 rule lexer = parse
   | [' ' '\t' '\n' '\r'] { lexer lexbuf }
-  | ';' [^'\n']* '\n' { lexer lexbuf }
+  | '#' [^'\n']* '\n' { lexer lexbuf }
   | eof { EOF }
   | "or" { OP Or }
   | "and" { OP And }
@@ -37,10 +39,22 @@ rule lexer = parse
   | "sh" { STORE 0b001 }
   | "sw" { STORE 0b010 }
   | "sd" { STORE 0b011 }
+  | "beq" { BOP Eq }
+  | "bne" { BOP Ne }
+  | "blt" { BOP Lt }
+  | "bge" { BOP Ge }
+  | "bltu" { BOP Ltu }
+  | "bgeu" { BOP Geu }
+  | "jal" { JAL }
+  | "jalr" { JALR }
+  | "lui" { LUI }
+  | "auipc" { AUIPC }
+  | ident as s { LABEL s }
   | ['0' - '9']* as s { IMM (int_of_string s) }
   | ',' { COMMA }
   | '(' { LPAR }
   | ')' { RPAR }
+  | ':' { DCOL }
   | 'x' (['0'-'9']+ as s)
     { let n = int_of_string s in
       if n < 0 || n > 31 then (Printf.eprintf "Invalid register: %d" n; exit 0)
