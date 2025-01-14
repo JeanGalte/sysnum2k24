@@ -9,7 +9,7 @@ def concat_list(l:list[Variable]) -> Variable:
         return l[0]
     return concat_list(l[:len(l)//2]) + concat_list(l[len(l)//2:])
 
-def concat_result(choice:Variable, vars:list[Variable]) -> Variable:
+def concat_result(choice:list[Variable], vars:list[Variable]) -> Variable:
     return multimux(choice, [concat_list(cycle(len(vars)-i, vars)) for i in range(len(vars))])
 
 def ram_manager(RAM_addr_size:int,
@@ -26,10 +26,10 @@ def ram_manager(RAM_addr_size:int,
 
     # Déterminer les adresses de lecture
     addr = RAM_read_addr[3:RAM_addr_size]
-    addr_remain = RAM_read_addr[0:3]
-    addr_remain0 = addr_remain[0]
-    addr_remain1 = addr_remain[1]
-    addr_remain2 = addr_remain[2]
+    addr_remain0 = RAM_read_addr[0]
+    addr_remain1 = RAM_read_addr[1]
+    addr_remain2 = RAM_read_addr[2]
+    addr_remain = [addr_remain0, addr_remain1, addr_remain2]
 
     addrl = []
     garbage, addrplus = add_one(addr)
@@ -44,10 +44,10 @@ def ram_manager(RAM_addr_size:int,
     
     # Déterminer les adresses d'écriture, comme pour la lecture
     waddr = RAM_write_addr[3:RAM_addr_size]
-    waddr_remain = RAM_write_addr[0:3]
-    waddr_remain0 = waddr_remain[0]
-    waddr_remain1 = waddr_remain[1]
-    waddr_remain2 = waddr_remain[2]
+    waddr_remain0 = RAM_write_addr[0]
+    waddr_remain1 = RAM_write_addr[1]
+    waddr_remain2 = RAM_write_addr[2]
+    waddr_remain = [waddr_remain0, waddr_remain1, waddr_remain2]
 
     waddrl = []
     garbage, waddrplus = add_one(waddr)
@@ -89,7 +89,7 @@ def ram_manager(RAM_addr_size:int,
         waddrl[i].set_as_output("wad" + str(i))
     
     val = concat_result(addr_remain, vall)
-    return multimux(RAM_word_size, [
+    return multimux([wws0, wws1], [
            sign_extend(64, val[0:8], RAM_sign_extend),
            sign_extend(64, val[0:16], RAM_sign_extend),
            sign_extend(64, val[0:32], RAM_sign_extend),
