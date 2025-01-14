@@ -64,15 +64,6 @@ def srl(a:Variable, b:Variable, funct7:Variable) -> Variable:
     fill
   )
 
-def slar(a:Variable, b:Variable) -> Variable:
-    '''shift left "arithmetic", equivalent to logical shift left'''
-    sll(a,b)
-
-def srar(a:Variable, b:Variable, funct7:Variable) -> Variable:
-    '''shift right arithmetic'''
-    x = a[0:1]
-    return (x + srl(a,b,funct7)) 
-
 def slt(a:Variable, b:Variable, aminusb:Variable) -> Variable:
   '''if a<b then 1 else 0'''
   return Constant("0"*(a.bus_size-1)) + ((a[0] & ~b[0]) | (~(a[0]^b[0]) & aminusb[0]))
