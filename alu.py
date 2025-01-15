@@ -1,6 +1,21 @@
 from lib_carotte import *
 from utils import *
 
+def multiplier(L:list[Variable], b):
+    res = []
+    n = len(L)
+    for i in range(n):
+        res.append(Mux(b[i], Constant("0"*n), L[i]))
+    for i in range(log2i(n)-1):
+        res2 = []
+        for j in range(0, n>>i, 2):
+            and_tmp = res[j] & res[j+1]
+            or_tmp = res[j] | res[j+1]
+            xor_tmp = res[j] ^ res[j+1]
+            res2.append(add([xor_tmp[i] for i in range(n)], [or_tmp[i] for i in range(n)], [and_tmp[i] for i in range(n)], Constant("0"))[0])
+        res = res2
+    return res[0]
+
 def log2i(n):
   '''ceil(log2(n)), not optimized'''
   if n==1:
@@ -38,13 +53,14 @@ def add(axorb:list[Variable], aorb:list[Variable], aandb:list[Variable], retenue
   overflow = (retenue & p[-1]) | g[-1]
   return add_aux(p, g, axorb, retenue), overflow
 
-def sll(a:Variable, b:Variable) -> Variable:
+def sll(a:Variable, b:Variable) -> tuple[list[Variable], Variable]:
   '''shift left logical, assuming n is a power of 2'''
   n = a.bus_size
   k = log2i(n-1)
-  return Mux(
-    is_not_null(b[0:n-k]),
-    multimux_be([b[i] for i in range(n-k,n)], [a]+[Constant("0"*i)+a[i:n] for i in range(1, n)]),
+  L = [a]+[Constant("0"*i)+a[:n-i] for i in range(1, n)]
+  return L, Mux(
+    is_not_null([b[i] for i in range(k, n)]),
+    multimux([b[i] for i in range(k)], L),
     Constant("0"*n)
   )
 
@@ -56,11 +72,11 @@ def sral(a:Variable, b:Variable, funct7:Variable) -> Variable:
   fill = letter
   res = [a]
   for i in range(1, n):
-    res.append(a[0:n-i]+fill)
+    res.append(a[i:n]+fill)
     fill = fill+letter
   return Mux(
-    is_not_null(b[0:n-k]),
-    multimux_be([b[i] for i in range(n-k,n)], res),
+    is_not_null([b[i] for i in range(k, n)]),
+    multimux([b[i] for i in range(k)], res),
     fill
   )
 
@@ -73,25 +89,37 @@ def sltu(a:Variable, b:Variable, aminusb:Variable) -> Variable:
   return Constant("0"*(a.bus_size-1)) + ((~a[0] & b[0]) | (~(a[0]^b[0]) & aminusb[0]))
 
 def alu(a:Variable, b:Variable, funct3:Variable, funct7:Variable) -> Variable:
+  funct75 = funct7[5]
   funct30 = funct3[0]
   funct31 = funct3[1]
   funct32 = funct3[2]
   n = a.bus_size
   # ensures that b2 = b when add/xor/and/or and b2 = -b when sub/slt/sltu
-  isnotsub = funct32 | (~funct7 & ~funct31)
+  isnotsub = funct32 | (~funct75 & ~funct31)
   b2 = Mux(isnotsub, ~b, b)
   aorb = a | b2
   aandb = a & b2
   axorb = a ^ b2
   aplusb, overflow = add([axorb[i] for i in range(n)], [aorb[i] for i in range(n)], [aandb[i] for i in range(n)], ~isnotsub)
+  L, sll_ret = sll(a, b)
   return multimux([funct30, funct31, funct32], [
     aplusb,
-    sll(a, b),
+    sll_ret,
     slt(a, b, aplusb),
     sltu(a, b, aplusb),
     axorb,
-    sral(a, b, funct7),
+    sral(a, b, funct75),
     aorb,
     aandb
   ])
+  # return multimux([funct30, funct31, funct32], [
+  #   Mux(funct7[0], aplusb, multiplier(L, b)),
+  #   sll_ret,
+  #   slt(a, b, aplusb),
+  #   sltu(a, b, aplusb),
+  #   axorb,
+  #   sral(a, b, funct75),
+  #   aorb,
+  #   aandb
+  # ])
 

@@ -3,8 +3,6 @@ from lib_carotte import *
 def add_one(a:Variable) -> (Variable, Variable):
     '''renvoie un booleen generate et le resultat'''
     size = a.bus_size
-    if size == 0:
-        return Constant("1"), Constant("")
     if size == 1:
         return a, ~a
     l = size//2
@@ -40,26 +38,8 @@ def multimux(choice:list[Variable], vars:list[Variable]) -> Variable:
         multimux(new_choice, [vars[i] for i in range(1, size, 2)])
     )
 
-def multimux_be(choice:list[Variable], vars:list[Variable]) -> Variable:
-    '''This multiplexer is lazy and will not return an error if the provided list
-    and choice are incompatible. However, it supports multiplexer with (not a power
-    of 2) entries. It selects the entry by its index in the provided list
-    (big endian).'''
-    size = len(vars)
-    if size == 0:
-        raise Exception("Cannot choose from no value.")
-    if size == 1:
-        return vars[0]
-    if size == 2:
-        return Mux(choice[-1], vars[0], vars[1])
-    new_choice = choice[:-1]
-    return Mux(choice[-1],
-        multimux_be(new_choice, [vars[i] for i in range(0, size, 2)]),
-        multimux_be(new_choice, [vars[i] for i in range(1, size, 2)])
-    )
-
-def is_not_null(a:Variable) -> Variable:
-    n = a.bus_size
+def is_not_null(a:list[Variable]) -> Variable:
+    n = len(a)
     if n==1:
-        return a
+        return a[0]
     return is_not_null(a[0:n//2]) | is_not_null(a[n//2:n])
