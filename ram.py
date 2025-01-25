@@ -39,7 +39,7 @@ def ram_manager(RAM_addr_size:int,
     addrl.append(Mux(addr_remain2, addr, addrplus)) # if addr_remain >= 001 then addrplus else addr
     addrl.append(Mux(addr_remain2 & (addr_remain1 | addr_remain0), addr, addrplus)) # if addr_remain >= 101 then addrplus else addr
     addrl.append(Mux(addr_remain2 & addr_remain1, addr, addrplus)) # if addr_remain >= 011 then addrplus else addr
-    addrl.append(Mux(addr_remain2 & addr_remain1 & addr_remain2, addr, addrplus)) # if addr_remain >= 111 then addrplus else addr
+    addrl.append(Mux(addr_remain2 & addr_remain1 & addr_remain0, addr, addrplus)) # if addr_remain >= 111 then addrplus else addr
     addrl.append(addr)
     
     # Déterminer les adresses d'écriture, comme pour la lecture
@@ -57,7 +57,7 @@ def ram_manager(RAM_addr_size:int,
     waddrl.append(Mux(waddr_remain2, waddr, waddrplus)) # if waddr_remain >= 001 then waddrplus else waddr
     waddrl.append(Mux(waddr_remain2 & (waddr_remain1 | waddr_remain0), waddr, waddrplus)) # if waddr_remain >= 101 then waddrplus else waddr
     waddrl.append(Mux(waddr_remain2 & waddr_remain1, waddr, waddrplus)) # if waddr_remain >= 011 then waddrplus else waddr
-    waddrl.append(Mux(waddr_remain2 & waddr_remain1 & waddr_remain2, waddr, waddrplus)) # if waddr_remain >= 111 then waddrplus else waddr
+    waddrl.append(Mux(waddr_remain2 & waddr_remain1 & waddr_remain0, waddr, waddrplus)) # if waddr_remain >= 111 then waddrplus else waddr
     waddrl.append(waddr)
     
     # Déterminer ce que l'on écrit
@@ -83,15 +83,8 @@ def ram_manager(RAM_addr_size:int,
             waddrl[i],                                             # write_address
             multimux(waddr_remain, cycle(i, RAM_write_datal))      # write_data
         ))
-    for i in range(8):
-        vall[i].set_as_output("rm" + str(i))
-        addrl[i].set_as_output("ad" + str(i))
-        waddrl[i].set_as_output("wad" + str(i))
     
     val = concat_result(addr_remain, vall)
-    return multimux([wws0, wws1], [
-           sign_extend(64, val[0:8], RAM_sign_extend),
-           sign_extend(64, val[0:16], RAM_sign_extend),
-           sign_extend(64, val[0:32], RAM_sign_extend),
-           val
-       ])
+    in16 = Mux(Or(wws0, wws1), sign_extend(16, val[0:8], RAM_sign_extend), val[0:16])
+    in32 = Mux(wws1, sign_extend(32, in16, RAM_sign_extend), val[0:32])
+    return Mux(And(wws0, wws1), sign_extend(64, in32, RAM_sign_extend), val)
