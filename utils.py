@@ -12,13 +12,18 @@ def add_one(a:Variable) -> (Variable, Variable):
     retenue, partie_gauche = add_one(a[0:l])
     return retenue & ret_0, partie_gauche + Mux(retenue, partie_droite0, partie_droite1)
 
+def fast_concat(n:int, a:Variable) -> Variable:
+    if n==1:
+        return a
+    b = fast_concat(n//2, a)
+    if n%2:
+        return b+b+a
+    return b+b
+
 def sign_extend(target:int, value: Variable, enable: Variable) -> Variable:
     '''Sign extend'''
     s = Mux(enable, Constant("0"), value[value.bus_size-1])
-    res = value
-    for i in range(value.bus_size, target):
-        res = res + s
-    return res
+    return value + fast_concat(target-value.bus_size, s)
 
 def multimux(choice:list[Variable], vars:list[Variable]) -> Variable:
     '''This multiplexer is lazy and will not return an error if the provided list
