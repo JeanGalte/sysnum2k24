@@ -1,34 +1,32 @@
-
+.global main
+.text
 
 # en 0: une valeur qui change entre 0 et 1 toutes les secs
 # 8: sec, 16: min, 24: h, 32:jour  40:mois, 48:ans
 
 main: 
-    ld x5, 0(x0) # on retient en x5 si on a un 0 ou un 1 
+    lw x5, 0(x0) # on retient si on a un 0 ou un 1 
 
-#il faut initialiser à l'heure de base stocké en 56,64,72,80,88,96
-
-    ld x1, 56(x0)
+#On commence à 0 pour le chronomètre
+    xor x1, x1, x1
     sd x1, 8(x0)
-    ld x1, 64(x0)
+    xor x1, x1, x1
     sd x1, 16(x0)
-    ld x1, 72(x0)
+    xor x1, x1, x1
     sd x1, 24(x0)
-    ld x1, 80(x0)
+    xor x1, x1, x1
     sd x1, 32(x0)
-    ld x1, 88(x0)
+    xor x1, x1, x1
     sd x1, 40(x0)
-    ld x1, 96(x0)
+    xor x1, x1, x1
     sd x1, 48(x0)
+    la x10, message
 
 # on stock le mod 25 de l'année en x6
     addi x6, x0, 0
 
-verification: # vérifie si on change de seconde
-    ld x1, 0(x0)
-    bne x5, x1, ajout_seconde 
-    jal x0, verification  # 
-
+verification: # boucle principale
+    jal x0, ajout_seconde 
 
 ajout_seconde: 
     addi x5, x1, 0 
