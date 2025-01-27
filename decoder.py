@@ -11,6 +11,7 @@ LUI = 0b0110111
 AUIPC = 0b0010111
 JAL = 0b1101111
 JALR = 0b1100111
+BOP = 0b1100011
 
 # À modifier quand on aura fait l'ALU
 def full_adder(a: Variable, b: Variable, c: Variable) -> typing.Tuple[Variable, Variable]:
@@ -29,6 +30,12 @@ def adder(a: Variable, b: Variable, c_in: Variable, i: int | None = None) -> typ
     (res_rest, c_rest) = adder(a, b, c_in, i-1)
     (res_i, c_out) = full_adder(a[i], b[i], c_rest)
     return (res_rest + res_i, c_out)
+
+def eq(d1, d2):
+    n = d1.bus_size
+    if n == 1:
+        return ~ (d1 ^ d2)
+    return eq(d1[:n//2], d2[:n//2]) & eq(d1[n//2:], d2[n//2:])
 
 def imm_gen(instr):
     extension = instr[31]
@@ -54,6 +61,12 @@ def jal_imm(instr):
         extension = extension + extension
     return Constant("0") + instr[21:30] + instr[20] + instr[12:20] + extension[:45]
 
+def bop_imm(instr):
+    extension = instr[31]
+    for _ in range(6):
+        extension = extension + extension
+    return Constant("0") + instr[8:12] + instr[25:30] + instr[7] + extension[:53]
+
 def decoder():
     pc = Reg(Defer(16, lambda: Mux(pc_change, pc_plus4, adder(pc, incr, Constant("0"))[0])))
     pc_plus4 = adder(pc, Constant ("0" * 13 + "100"), Constant("0"))[0]
@@ -64,20 +77,20 @@ def decoder():
     rr1 = instr[15:20]
     rr2 = instr[20:25]
     wr = instr[7:12]
-    funct3 = instr[12:15]
-    funct7 = instr[25:]
-
-    lui = eq_const(opcode, LUI, 7)
-    big_imm = big_imm_gen(instr)
-    small_imm = imm_gen(instr)
+    bop = eq_const(opcode, BOP, 7)
 
     jal  = eq_const(opcode, JAL, 7)
     jalr = eq_const(opcode, JALR, 7)
     auipc = eq_const(opcode, AUIPC, 7)
     write_pc_plus4 = jal | jalr
     pc_change = jal | jalr | auipc
+    
+    funct3 = Mux(bop, instr[12:15], instr[13:15] + Constant("0"))
+    funct7 = instr[25:]
 
-    incr = Mux(auipc, Mux(jal, small_imm, jal_imm(instr)), big_imm)[:16]
+    lui = eq_const(opcode, LUI, 7)
+    big_imm = big_imm_gen(instr)
+    small_imm = imm_gen(instr)
     
     rw = eq_const(opcode, ARITH_PREFIX, 5) | lui | eq_const(opcode, LOAD_PREFIX, 7) | write_pc_plus4
     # registers
@@ -106,9 +119,27 @@ def decoder():
     ram_write_addr, _ = adder(rd1, imm_gen_alt(instr), Constant("0"))
     ram_write_data = rd2
 
-    ram_out = ram.ram_manager(10, ram_word_size, ram_sign_extend, ram_read_addr[:16], ram_write_en, ram_write_addr[:16], rd2)
+    ram_out = ram.ram_manager(10, ram_word_size, ram_sign_extend,
+                              ram_read_addr[:16], ram_write_en,
+                              ram_write_addr[:16], rd2)
 
-    wd = multimux([lui, ram_write2reg, write_pc_plus4], [alu_out, big_imm, ram_out, Constant("0" * 64)])
+    # jump
+    
+    reg_eq = eq(rd1, rd2)
+    cmp_res = Mux(eq_const(instr[13:15], 0b00, 2), alu_out[0], reg_eq) ^ instr[12]
+    
+    
+    incr = Mux(auipc,
+               Mux(jal,
+                   Mux(bop,
+                       Mux(cmp_res, Constant("0" * 61 + "100"), bop_imm(instr)),
+                       adder(small_imm, rd1, Constant("0"))[0]),
+                   jal_imm(instr)),
+               big_imm)[:16]
+
+    wd = multimux([lui, ram_write2reg, write_pc_plus4],
+                  [alu_out, big_imm, ram_out, Constant("0" * 64),
+                   pc_plus4 + Constant("0" * 48)])
 
 def main():
     allow_ribbon_logic_operations(True)
