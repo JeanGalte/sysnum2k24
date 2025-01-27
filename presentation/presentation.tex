@@ -62,14 +62,80 @@
 			\includesvg[scale=0.4]{RISC-V-logo.svg}
 			\caption{Logo de RISC-V\footnote{RISC-V Foundation, CC BY-SA 4.0}.}
 		\end{figure}
-		
+	\end{frame}
+	
+	\begin{frame}{Formats}
+		\centering
+		\scalebox{0.75}{
+			\begin{tabular}{|c|c|c|c|c|c|l|}
+				\hline
+				\cellcolor{ULMjaune} $\color{ULMviolet}31:25$ & \cellcolor{ULMjaune} $\color{ULMviolet}24:20$ & \cellcolor{ULMjaune} $\color{ULMviolet}19:15$ & \cellcolor{ULMjaune} $\color{ULMviolet}14:12$ & \cellcolor{ULMjaune} $\color{ULMviolet}11:7$ & \cellcolor{ULMjaune} $\color{ULMviolet}6:0$ & \cellcolor{ULMjaune} \color{ULMviolet} type \\
+				\hline
+				funct7 & rs2 & rs1 & funct3 & rd & opcode & \cellcolor{ULMjaune} \color{ULMviolet} \texttt R \\
+				\hline
+				\multicolumn{2}{|c|}{imm[$11:0$]} & rs1 & funct3 & rd & opcode & \cellcolor{ULMjaune} \color{ULMviolet} \texttt I \\
+				\hline
+				imm[$11:5$] & rs2 & rs1 & funct3 & imm[$4:0$] & opcode & \cellcolor{ULMjaune} \color{ULMviolet} \texttt S \\
+				\hline
+				imm[$12|10:5$] & rs2 & rs1 & funct3 & imm[$4:1|11$] & opcode & \cellcolor{ULMjaune} \color{ULMviolet} \texttt B \\
+				\hline
+				\multicolumn{4}{|c|}{imm[$31:12$]} & rd & opcode & \cellcolor{ULMjaune} \color{ULMviolet} \texttt U \\
+				\hline
+				\multicolumn{4}{|c|}{imm[$20|10:1|11|19:12$]} & rd & opcode & \cellcolor{ULMjaune} \color{ULMviolet} \texttt J \\
+				\hline
+			\end{tabular}
+		}
+	\end{frame}
+	
+	\begin{frame}{Exemples}
+		\centering
+		\scalebox{0.75}{
+			\begin{tabular}{|c|c|c|c|c|c|l|}
+				\hline
+				\cellcolor{ULMjaune} $\color{ULMviolet}31:25$ & \cellcolor{ULMjaune} $\color{ULMviolet}24:20$ & \cellcolor{ULMjaune} $\color{ULMviolet}19:15$ & \cellcolor{ULMjaune} $\color{ULMviolet}14:12$ & \cellcolor{ULMjaune} $\color{ULMviolet}11:7$ & \cellcolor{ULMjaune} $\color{ULMviolet}6:0$ & \cellcolor{ULMjaune} \color{ULMviolet} type \\
+				\hline
+				0\_00000 & rs2 & rs1 & \_\_\_ & rd & 011\_011 & \cellcolor{ULMjaune} \color{ULMviolet} ALU \\
+				\hline
+				\multicolumn{2}{|c|}{imm[$11:0$]} & rs1 & \_\_\_ & rd & 001\_011 & \cellcolor{ULMjaune} \color{ULMviolet} ALU-I \\
+				\hline
+				imm[$11:5$] & rs2 & rs1 & \_\_\_ & imm[$4:0$] & 0100011 & \cellcolor{ULMjaune} \color{ULMviolet} \texttt Store \\
+				\hline
+				imm[$12|10:5$] & rs2 & rs1 & \_\_\_ & imm[$4:1|11$] & 1100011 & \cellcolor{ULMjaune} \color{ULMviolet} Branch \\
+				\hline
+				\multicolumn{4}{|c|}{imm[$31:12$]} & rd & 0110111 & \cellcolor{ULMjaune} \color{ULMviolet} LUI \\
+				\hline
+				\multicolumn{4}{|c|}{imm[$20|10:1|11|19:12$]} & rd & 1101111 & \cellcolor{ULMjaune} \color{ULMviolet} JAL \\
+				\hline
+			\end{tabular}
+		}
+	\end{frame}
+	
+	\begin{frame}{Instructions supportées}
+		\centering
+		\begin{tabular}{|l|l|}
+			\hline
+			\cellcolor{ULMjaune} \color{ULMviolet} Catégorie & \cellcolor{ULMjaune} \color{ULMviolet} Instructions \\
+			\hline
+			\cellcolor{ULMjaune} \color{ULMviolet} ALU & or, and, add, sub, sll, slt, sltu, xor, srl, sra \\
+			\hline
+			\cellcolor{ULMjaune} \color{ULMviolet} ALU-I & ori, andi, addi, slli, slti, sltiu, xori, srli, srai \\
+			\hline
+			\cellcolor{ULMjaune} \color{ULMviolet} Jump & jal, jalr \\
+			\hline
+			\cellcolor{ULMjaune} \color{ULMviolet} Branch & beq, bne, blt, bge, bltu, bgeu \\
+			\hline
+			\cellcolor{ULMjaune} \color{ULMviolet} Load/Store & lb, lh, lw, ld, lbu,  lhu, lwu, sb, sh, sw, sd \\
+			\hline
+			\cellcolor{ULMjaune} \color{ULMviolet} Autre & lui, auipc \\
+			\hline
+		\end{tabular}
 	\end{frame}
 	
 	\section{ALU}
 	
-	\begin{frame}{Additionneur}
-		carry-lookahead
-	\end{frame}
+	\codeframeline{Carry-lookahead adder}{27}{39}{../alu.py}
+	\codeframeline{Réutilisation des circuits}{98}{114}{../alu.py}
+	\codeframeline{Multiplicateur peu intelligent}{4}{17}{../alu.py}
 	
 	\section{RAM}
 	
