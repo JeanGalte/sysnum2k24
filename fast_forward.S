@@ -5,7 +5,6 @@
 # 8: sec, 16: min, 24: h, 32:jour  40:mois, 48:ans
 
 main: 
-    lw x5, 0(x0) # on retient si on a un 0 ou un 1 
 
 #On commence à 0 pour le chronomètre
     li x1, 0
@@ -20,9 +19,6 @@ main:
     sw x1, 40(x0)
     li x1, 0
     sw x1, 48(x0)
-
-.global main
-.text
 
 # on stock le mod 25 de l'année en x6
     li x6 0
