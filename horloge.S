@@ -2,24 +2,24 @@
 .text
 
 # en 0: une valeur qui change entre 0 et 1 toutes les secs
-# 1: sec, 2: min, 3: h, 4:jour  5:mois, 6:a
+# 8: sec, 16: min, 24: h, 32:jour  40:mois, 48:ans
 
 main: 
-    lw x5, 0(x0) # on retient si on a un 0 ou un 1 
+    lw x5, 0(x0) # on retient en x5 si on a un 0 ou un 1 
 
-#il faut initialiser à l'heure de base stocké en 7,8,9,10,11,12
-    lw x1, 7(x0)
-    sw x1, 1(x0)
-    lw x1, 8(x0)
-    sw x1, 2(x0)
-    lw x1, 9(x0)
-    sw x1, 3(x0)
-    lw x1, 10(x0)
-    sw x1, 4(x0)
-    lw x1, 11(x0)
-    sw x1, 5(x0)
-    lw x1, 12(x0)
-    sw x1, 6(x0)
+#il faut initialiser à l'heure de base stocké en 56,64,72,80,88,96
+    lw x1, 56(x0)
+    sw x1, 8(x0)
+    lw x1, 64(x0)
+    sw x1, 16(x0)
+    lw x1, 72(x0)
+    sw x1, 24(x0)
+    lw x1, 80(x0)
+    sw x1, 32(x0)
+    lw x1, 88(x0)
+    sw x1, 40(x0)
+    lw x1, 96(x0)
+    sw x1, 48(x0)
 
 verification: # vérifie si on change de seconde
     lw x1, 0(x0)
@@ -30,37 +30,37 @@ verification: # vérifie si on change de seconde
 ajout_seconde: 
     addi x5, x1, 0 
     # si on est à 60s
-    lw x1, 1(x0)
+    lw x1, 8(x0)
     li x2, 60  
     beq x2, x1 , ajout_minute 
     addi x1, x1, 1
-    sw x1, 1(x0) #on stock les secondes en 1
+    sw x1, 8(x0) #on stock les secondes en 8
     jal verification 
 
 
 ajout_minute:
     #on remet les sec à 0
-    sw x0, 1(x0)
-    lw x1, 2(x0) 
+    sw x0, 8(x0)
+    lw x1, 16(x0) 
     li x2, 60  
     beq x2, x1 , ajout_heure
     addi x1, x1, 1
-    sw x1, 2(x0) #on stock les minutes en 2
+    sw x1, 16(x0) #on stock les minutes en 2
     jal verification 
 
 ajout_heure:
     #on remet les minutes à 0
-    sw x0, 2(x0)
-    lw x1, 3(x0) 
+    sw x0, 16(x0)
+    lw x1, 24(x0) 
     li x2, 24  
     beq x2, x1 , ajout_jour 
     addi x1, x1, 1
-    sw x1, 3(x0) #on stock les heures en 3
+    sw x1, 24(x0) #on stock les heures en 3
     jal verification 
 
 ajout_jour:
     #on regarde le mois
-    lw x1, 5(x0)
+    lw x1, 40(x0)
     li x2, 1 
     beq x2, x1, ajout_jour_31 
     li x2, 3 
@@ -84,68 +84,68 @@ ajout_jour:
     li x2, 11
     beq x2, x1, ajout_jour_30
     #si c'est 2 il faut regarder l'année mod 4
-    lw x2, 6(x0)
+    lw x2, 48(x0)
     andi x2, x2, 3 # si x2 = 0 l'année est 0 mod 4 donc 29 jours
     beq x2, x0, ajout_jour_29
     jal ajout_jour_28  
 
 ajout_jour_31:
     #on remet les heures à 0
-    sw x0, 3(x0)
-    lw x1, 4(x0)
+    sw x0, 24(x0)
+    lw x1, 32(x0)
     li x2, 31
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
-    sw x1, 4(x0) #on stock les jours en 4
+    sw x1, 32(x0) #on stock les jours en 4
     jal verification 
 
 ajout_jour_30:
     #on remet les heures à 0
-    sw x0, 3(x0)
-    lw x1, 4(x0)
+    sw x0, 24(x0)
+    lw x1, 32(x0)
     li x2, 31
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
-    sw x1, 4(x0) #on stock les jours en 4
+    sw x1, 32(x0) #on stock les jours en 4
     jal verification 
 
 ajout_jour_29:
     #on remet les heures à 0
-    sw x0, 3(x0)
-    lw x1, 4(x0)
+    sw x0, 24(x0)
+    lw x1, 32(x0)
     li x2, 31
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
-    sw x1, 4(x0) #on stock les jours en 4
+    sw x1, 32(x0) #on stock les jours en 4
     jal verification 
 
 ajout_jour_28:
     #on remet les heures à 0
-    sw x0, 3(x0)
-    lw x1, 4(x0)
+    sw x0, 24(x0)
+    lw x1, 32(x0)
     li x2, 31
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
-    sw x1, 4(x0) #on stock les jours en 4
+    sw x1, 32(x0) #on stock les jours en 4
     jal verification 
 
 
 ajout_mois:
     #on remet les jours à 1
     li x1, 1 
-    sw x1, 4(x0)
-    lw x1, 5(x0) 
+    sw x1, 32(x0)
+    lw x1, 40(x0) 
     li x2, 31
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
-    sw x1, 5(x0) #on stock les mois en 5
+    sw x1, 40(x0) #on stock les mois en 5
     jal verification 
 
 ajout_ans:
     #on remet les mois à 1
     li x1, 1 
-    sw x1, 5(x0)
-    lw x1, 6(x0) 
+    sw x1, 40(x0)
+    lw x1, 48(x0) 
     addi x1, x1, 1
-    sw x1, 6(x0) #on stock les années en 6
+    sw x1, 48(x0) #on stock les années en 6
     jal verification 
