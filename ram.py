@@ -73,7 +73,7 @@ def ram_manager(RAM_addr_size:int,
     we00 = RAM_write_enable
     we10 = RAM_write_enable & (wws0 | wws1)
     we01 = RAM_write_enable & wws1
-    we11 = RAM_write_enable & wws0 & wws1
+    we11 = we01 & wws0
     RAM_write_enablel = [we00, we11, we11, we11, we11, we01, we01, we10]
 
     # Nos 8 modules de RAM
