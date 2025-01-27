@@ -42,11 +42,11 @@ instruction:
     { pc := !pc + 4; Store (size, x1, i, x2) }
   | s = LABEL DCOL { get_label_ref s := !pc; Nop }
   | op = BOP x1 = REG COMMA x2 = REG COMMA s = LABEL
-    { pc := !pc + 4; Branch (op, x1, x2, (!pc, get_label_ref s)) }
+    { pc := !pc + 4; Branch (op, x1, x2, (!pc - 4, get_label_ref s)) }
   | JAL x = REG COMMA s = LABEL
-    { pc := !pc + 4; Jal (x, (!pc, get_label_ref s))}
+    { pc := !pc + 4; Jal (x, (!pc - 4, get_label_ref s))}
   | JALR x1 = REG COMMA x2 = REG COMMA s = LABEL
-    { pc := !pc + 4; Jalr (x1, x2, (!pc, get_label_ref s))}
+    { pc := !pc + 4; Jalr (x1, x2, (!pc - 4, get_label_ref s))}
   | LUI x = REG COMMA i = IMM
     { pc := !pc + 4; Lui (x, i) }
   | AUIPC x = REG COMMA i = IMM

@@ -49,7 +49,6 @@ rule lexer = parse
   | "jalr" { JALR }
   | "lui" { LUI }
   | "auipc" { AUIPC }
-  | ident as s { LABEL s }
   | ['0' - '9']* as s { IMM (int_of_string s) }
   | ',' { COMMA }
   | '(' { LPAR }
@@ -59,6 +58,7 @@ rule lexer = parse
     { let n = int_of_string s in
       if n < 0 || n > 31 then (Printf.eprintf "Invalid register: %d" n; exit 0)
       else REG n }
+  | ident as s { LABEL s }
   | _ as c { Printf.eprintf "Unknown character: %c" c; exit 1 }
 
 {
