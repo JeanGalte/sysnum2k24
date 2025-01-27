@@ -1,5 +1,4 @@
-.global main
-.text
+
 
 # en 0: une valeur qui change entre 0 et 1 toutes les secs
 # 8: sec, 16: min, 24: h, 32:jour  40:mois, 48:ans
