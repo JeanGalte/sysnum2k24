@@ -49,7 +49,7 @@ rule lexer = parse
   | "jalr" { JALR }
   | "lui" { LUI }
   | "auipc" { AUIPC }
-  | ['0' - '9']* as s { IMM (int_of_string s) }
+  | '-'? ['0' - '9']* as s { IMM (int_of_string s) }
   | ',' { COMMA }
   | '(' { LPAR }
   | ')' { RPAR }

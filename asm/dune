@@ -6,4 +6,5 @@
  (infer true))
 (executable
  (name asm)
+ (modules asm emit encode lexer parser simulator syntax)
  (promote (until-clean)))

@@ -1,0 +1,111 @@
+\documentclass{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{tabularx}
+\usepackage{stix}
+\usepackage[table]{xcolor}
+\usepackage{svg}
+
+\definecolor{ULMviolet}{rgb}{0.356862745, 0.207843137, 0.509803922}
+\definecolor{ULMjaune}{rgb}{0.968627451, 0.749019608, 0.0}
+
+\usetheme{Berlin}
+\setbeamercolor{palette primary}{bg=ULMviolet,fg=ULMjaune}
+\setbeamercolor{palette secondary}{bg=ULMviolet,fg=ULMjaune}
+\setbeamercolor{palette tertiary}{bg=ULMviolet,fg=ULMjaune}
+\setbeamercolor{palette quaternary}{bg=ULMviolet,fg=ULMjaune}
+\setbeamercolor{structure}{fg=ULMviolet}
+\setbeamercolor{section in toc}{fg=ULMviolet}
+
+\setbeamercolor{subsection in head/foot}{bg=ULMviolet,fg=ULMjaune}
+
+\usepackage{minted}
+\newmintedfile[pcode]{py}{
+	linenos,
+	breaklines,
+	fontsize=\scriptsize,
+	numbersep=5pt,
+}
+\newcommand{\codeframeline}[4]{
+	\begin{frame}{#1}
+		\centering
+		\begin{minipage}{0.9\textwidth}
+			\pcode[firstline=#2, lastline=#3]{#4}
+		\end{minipage}
+	\end{frame}
+}
+
+\title{Microprocesseur RISC-V, horloge}
+\author{Aghilas BOUSSAA, Marius CAPELLI, Olivier HENRY, Paul WANG}
+
+\AtBeginSection[]
+{
+	\begin{frame}
+		\frametitle{Sommaire}
+		\tableofcontents[currentsection]
+	\end{frame}
+}
+
+\begin{document}
+	\maketitle
+	
+	\begin{frame}{Sommaire}
+		\tableofcontents
+	\end{frame}
+	
+	\section{ISA}
+	
+	\begin{frame}{RISC V}
+		\begin{figure}
+			\centering
+			\includesvg[scale=0.4]{RISC-V-logo.svg}
+			\caption{Logo de RISC-V\footnote{RISC-V Foundation, CC BY-SA 4.0}.}
+		\end{figure}
+		
+	\end{frame}
+	
+	\section{ALU}
+	
+	\begin{frame}{Additionneur}
+		carry-lookahead
+	\end{frame}
+	
+	\section{RAM}
+	
+	\begin{frame}{Organisation}
+		\centering
+		Mots de 8, 16, 32 ou 64 bits, adressable à l'octet, circulaire.
+		
+		\medskip
+		
+		\begin{tabularx}{\textwidth}{|l|X|X|X|X|X|X|X|X|}
+			\hline
+			\cellcolor{ULMjaune}\color{ULMviolet} RAM & \cellcolor{ULMjaune}$\color{ULMviolet}000$ & \cellcolor{ULMjaune}$\color{ULMviolet}100$ & \cellcolor{ULMjaune}$\color{ULMviolet}010$ & \cellcolor{ULMjaune}$\color{ULMviolet}110$ & \cellcolor{ULMjaune}$\color{ULMviolet}001$ & \cellcolor{ULMjaune}$\color{ULMviolet}101$ & \cellcolor{ULMjaune}$\color{ULMviolet}011$ & \cellcolor{ULMjaune}$\color{ULMviolet}111$ \\
+			\hline
+			00 & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\carriagereturn$ \\
+			\hline
+			10 & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\carriagereturn$ \\
+			\hline
+			01 & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & \cellcolor{ULMviolet} $\color{ULMjaune}\rightarrow$ & \cellcolor{ULMviolet} $\color{ULMjaune}\rightarrow$ & \cellcolor{ULMviolet} $\color{ULMjaune}\rightarrow$ & \cellcolor{ULMviolet} $\color{ULMjaune}\rightarrow$ & \cellcolor{ULMviolet} $\color{ULMjaune}\carriagereturn$ \\
+			\hline
+			11 & \cellcolor{ULMviolet} $\color{ULMjaune}\rightarrow$ & \cellcolor{ULMviolet} $\color{ULMjaune}\rightarrow$ & \cellcolor{ULMviolet} $\color{ULMjaune}\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\carriagereturn$ \\
+			\hline
+		\end{tabularx}
+		
+		\medskip
+		
+		Exemple : \colorbox{ULMjaune}{\color{ULMviolet}110} 01
+	\end{frame}
+	
+	\codeframeline{Calcul des adresses}{38}{45}{../ram.py}
+	\codeframeline{Données à écrire}{67}{77}{../ram.py}
+	\codeframeline{Modules}{80}{89}{../ram.py}
+	
+	\section{Programme}
+	
+	\begin{frame}{RISC V}
+		
+	\end{frame}
+	
+\end{document}
