@@ -23,10 +23,8 @@ main:
 # on stock le mod 25 de l'année en x6
     li x6 0
 
-verification: # vérifie si on change de seconde
-    lw x1, 0(x0)
-    bne x5, x1, ajout_seconde 
-    jal verification  # 
+verification: # boucle principale
+    jal verification  
 
 
 ajout_seconde: 
