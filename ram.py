@@ -33,13 +33,15 @@ def ram_manager(RAM_addr_size:int,
 
     addrl = []
     garbage, addrplus = add_one(addr)
-    addrl.append(Mux(addr_remain0 | addr_remain1 | addr_remain2, addr, addrplus)) # if addr_remain >= 100 then addrplus else addr
-    addrl.append(Mux(addr_remain1 | addr_remain2, addr, addrplus)) # if addr_remain >= 010 then addrplus else addr
-    addrl.append(Mux(addr_remain2 | (addr_remain1 & addr_remain0), addr, addrplus)) # if addr_remain >= 110 then addrplus else addr
+    ar1_or_ar2 = addr_remain1 | addr_remain2
+    ar1_and_ar2 = addr_remain1 & addr_remain2
+    addrl.append(Mux(addr_remain0 | ar1_or_ar2, addr, addrplus)) # if addr_remain >= 100 then addrplus else addr
+    addrl.append(Mux(ar1_or_ar2, addr, addrplus)) # if addr_remain >= 010 then addrplus else addr
+    addrl.append(Mux(addr_remain2 | (addr_remain0 & addr_remain1), addr, addrplus)) # if addr_remain >= 110 then addrplus else addr
     addrl.append(Mux(addr_remain2, addr, addrplus)) # if addr_remain >= 001 then addrplus else addr
     addrl.append(Mux(addr_remain2 & (addr_remain1 | addr_remain0), addr, addrplus)) # if addr_remain >= 101 then addrplus else addr
-    addrl.append(Mux(addr_remain2 & addr_remain1, addr, addrplus)) # if addr_remain >= 011 then addrplus else addr
-    addrl.append(Mux(addr_remain2 & addr_remain1 & addr_remain0, addr, addrplus)) # if addr_remain >= 111 then addrplus else addr
+    addrl.append(Mux(ar1_and_ar2, addr, addrplus)) # if addr_remain >= 011 then addrplus else addr
+    addrl.append(Mux(ar1_and_ar2 & addr_remain0, addr, addrplus)) # if addr_remain >= 111 then addrplus else addr
     addrl.append(addr)
     
     # Déterminer les adresses d'écriture, comme pour la lecture
@@ -51,13 +53,15 @@ def ram_manager(RAM_addr_size:int,
 
     waddrl = []
     garbage, waddrplus = add_one(waddr)
-    waddrl.append(Mux(waddr_remain0 | waddr_remain1 | waddr_remain2, waddr, waddrplus)) # if waddr_remain >= 100 then waddrplus else waddr
+    war1_or_war2 = waddr_remain1 | waddr_remain2
+    war1_and_war2 = waddr_remain1 & waddr_remain2
+    waddrl.append(Mux(waddr_remain0 | war1_or_war2, waddr, waddrplus)) # if waddr_remain >= 100 then waddrplus else waddr
     waddrl.append(Mux(waddr_remain1 | waddr_remain2, waddr, waddrplus)) # if waddr_remain >= 010 then waddrplus else waddr
     waddrl.append(Mux(waddr_remain2 | (waddr_remain1 & waddr_remain0), waddr, waddrplus)) # if waddr_remain >= 110 then waddrplus else waddr
     waddrl.append(Mux(waddr_remain2, waddr, waddrplus)) # if waddr_remain >= 001 then waddrplus else waddr
     waddrl.append(Mux(waddr_remain2 & (waddr_remain1 | waddr_remain0), waddr, waddrplus)) # if waddr_remain >= 101 then waddrplus else waddr
-    waddrl.append(Mux(waddr_remain2 & waddr_remain1, waddr, waddrplus)) # if waddr_remain >= 011 then waddrplus else waddr
-    waddrl.append(Mux(waddr_remain2 & waddr_remain1 & waddr_remain0, waddr, waddrplus)) # if waddr_remain >= 111 then waddrplus else waddr
+    waddrl.append(Mux(war1_and_war2, waddr, waddrplus)) # if waddr_remain >= 011 then waddrplus else waddr
+    waddrl.append(Mux(war1_and_war2 & waddr_remain0, waddr, waddrplus)) # if waddr_remain >= 111 then waddrplus else waddr
     waddrl.append(waddr)
     
     # Déterminer ce que l'on écrit
