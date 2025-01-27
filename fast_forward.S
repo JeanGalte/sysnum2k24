@@ -1,4 +1,5 @@
-
+.global main
+.text
 
 # en 0: une valeur qui change entre 0 et 1 toutes les secs
 # 8: sec, 16: min, 24: h, 32:jour  40:mois, 48:ans
@@ -7,17 +8,17 @@ main:
     lw x5, 0(x0) # on retient si on a un 0 ou un 1 
 
 #On commence à 0 pour le chronomètre
-    ld x1, x0
+    xor x1, x1, x1
     sd x1, 8(x0)
-    ld x1, x0
+    xor x1, x1, x1
     sd x1, 16(x0)
-    ld x1, x0
+    xor x1, x1, x1
     sd x1, 24(x0)
-    ld x1, x0
+    xor x1, x1, x1
     sd x1, 32(x0)
-    ld x1, x0
+    xor x1, x1, x1
     sd x1, 40(x0)
-    ld x1, x0
+    xor x1, x1, x1
     sd x1, 48(x0)
     la x10, message
 
