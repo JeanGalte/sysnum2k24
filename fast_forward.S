@@ -4,6 +4,17 @@
 main: 
 # on stock le mod 25 de l'année en x6
     addi x6, x0, 0
+    gyear x1 
+    addi x2, x0, 25 
+compte_mod25:
+    addi x6, x6, 1
+    addi x1, x1, -1
+    bne x6, x2, passe_25
+    addi x6, x0, 0
+passe_25:
+    beq x1, x0, fin_25
+    jal compte_mod25
+fin_25:
 
 verification: # boucle principale
     jal x0, ajout_seconde 
