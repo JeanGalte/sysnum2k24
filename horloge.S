@@ -4,28 +4,27 @@
 # 8: sec, 16: min, 24: h, 32:jour  40:mois, 48:ans
 
 main: 
-    ld x5, 0(x0) # on retient en x5 si on a un 0 ou un 1 
+    gtck x5 # on retient en x5 si on a un 0 ou un 1 
 
 #il faut initialiser à l'heure de base stocké en 56,64,72,80,88,96
 
-    ld x1, 56(x0)
-    sd x1, 8(x0)
-    ld x1, 64(x0)
-    sd x1, 16(x0)
-    ld x1, 72(x0)
-    sd x1, 24(x0)
-    ld x1, 80(x0)
-    sd x1, 32(x0)
-    ld x1, 88(x0)
-    sd x1, 40(x0)
-    ld x1, 96(x0)
-    sd x1, 48(x0)
-
 # on stock le mod 25 de l'année en x6
+#il faut l'initialiser
+    addi x6, x0, 0 #x6: année mod 25
+    gyear x1 # x1: année
+    addi x2, x0, 25 #x2: 25
+compte_mod25:
+    addi x6, x6, 1
+    addi x1, x1, -1
+    bne x6, x2, passe_25
     addi x6, x0, 0
+passe_25:
+    beq x1, x0, fin_25
+    jal compte_mod25
+fin_25:
 
 verification: # vérifie si on change de seconde
-    ld x1, 0(x0)
+    gtck x1
     bne x5, x1, ajout_seconde 
     jal x0, verification  # 
 
@@ -33,37 +32,37 @@ verification: # vérifie si on change de seconde
 ajout_seconde: 
     addi x5, x1, 0 
     # si on est à 60s
-    ld x1, 8(x0)
+    gsec x1
     addi  x2, x0, 60  
     beq x2, x1 , ajout_minute 
     addi x1, x1, 1
-    sd x1, 8(x0) #on stock les secondes en 8
+    ssec x1 
     jal x0, verification 
 
 
 ajout_minute:
     #on remet les sec à 0
-    sd x0, 8(x0)
-    ld x1, 16(x0) 
+    ssec x0
+    gmin x1
     addi  x2, x0, 60  
     beq x2, x1 , ajout_heure
     addi x1, x1, 1
-    sd x1, 16(x0) #on stock les minutes en 2
+    smin x1 
     jal x0, verification 
 
 ajout_heure:
     #on remet les minutes à 0
-    sd x0, 16(x0)
-    ld x1, 24(x0) 
+    smin x0
+    ghour x1 
     addi  x2, x0, 24  
     beq x2, x1 , ajout_jour 
     addi x1, x1, 1
-    sd x1, 24(x0) #on stock les heures en 3
+    shour x1 
     jal x0, verification 
 
 ajout_jour:
     #on regarde le mois
-    ld x1, 40(x0)
+    gmon
     addi  x2, x0, 1 
     beq x2, x1, ajout_jour_31 
     addi  x2,x0, 3 
@@ -87,7 +86,7 @@ ajout_jour:
     addi  x2, x0, 11
     beq x2, x1, ajout_jour_30
     #si c'est 2 il faut regarder l'année mod 4
-    ld x2, 48(x0)
+    gyear x2
     andi x1, x2, 3 # si x1 = 0 l'année est 0 mod 4 
     andi x2, x2, 7 # si x2 = 0 l'année est 0 mod 8
     beq x1, x0, div_par_4
@@ -104,63 +103,63 @@ div_par_100:
 
 ajout_jour_31:
     #on remet les heures à 0
-    sd x0, 24(x0)
-    ld x1, 32(x0)
+    shour x0
+    gday x1
     addi  x2, x0, 31
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
-    sd x1, 32(x0) #on stock les jours en 4
+    sday x1
     jal x0, verification 
 
 ajout_jour_30:
     #on remet les heures à 0
-    sd x0, 24(x0)
-    ld x1, 32(x0)
+    shour x0
+    gday x1
     addi  x2, x0, 31
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
-    sd x1, 32(x0) #on stock les jours en 4
+    sday x1
     jal x0, verification 
 
 ajout_jour_29:
     #on remet les heures à 0
-    sd x0, 24(x0)
-    ld x1, 32(x0)
+    shour x0
+    gday x1
     addi  x2, x0, 31
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
-    sd x1, 32(x0) #on stock les jours en 4
+    sday x1
     jal x0, verification 
 
 ajout_jour_28:
     #on remet les heures à 0
-    sd x0, 24(x0)
-    ld x1, 32(x0)
+    shour x0
+    gday x1
     addi  x2, x0, 31
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
-    sd x1, 32(x0) #on stock les jours en 4
+    sday x1
     jal x0, verification 
 
 
 ajout_mois:
     #on remet les jours à 1
     addi  x1, x0, 1 
-    sd x1, 32(x0)
-    ld x1, 40(x0) 
+    sday x1
+    gmon x1
     addi  x2, x0, 31
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
-    sd x1, 40(x0) #on stock les mois en 5
+    smon x1
     jal x0, verification 
 
 ajout_ans:
     #on remet les mois à 1
     addi  x1, x0, 1 
-    sd x1, 40(x0)
-    ld x1, 48(x0) 
+    smon x1
+    gyear x1
     addi x1, x1, 1
-    sd x1, 48(x0) #on stock les années en 6
+    syear x1 #on stock les années en 6
     #on augment le mod 25
     addi x6, x6, 1
     addi  x2, x0, 25
