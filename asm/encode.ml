@@ -31,7 +31,6 @@ let bop_map =
   |> List.to_seq |> BOMap.of_seq
 
 let eval_address (n, r) =
-  print_int (!r - n);
   !r - n
 
 let instruction = function

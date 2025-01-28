@@ -100,8 +100,12 @@ def decoder():
     small_imm = imm_gen(instr)
 
     load = eq_const(opcode, LOAD_PREFIX, 5)
+
+    get_tick = eq_const(opcode, GET_TICK, 5)
+    set_date = eq_const(opcode, SET_DATE, 5)
+    get_date = eq_const(opcode, GET_DATE, 5)
     
-    rw = arith_op | lui | load | write_pc_plus4
+    rw = arith_op | lui | load | write_pc_plus4 | get_tick | get_date
     # registers
     bigone = Constant("1" * 64)
     bigzero = Constant("0" * 64)
@@ -145,14 +149,12 @@ def decoder():
                big_imm)[:16]
 
     # clock
-    get_tick = eq_const(opcode, GET_TICK, 5)
     tick = ROM(1, 64, Constant("0"))
     tick.rename("tick")
 
-    set_date = eq_const(opcode, SET_DATE, 5)
+    
     date = RAM(3, 64, funct3, set_date, funct3, rd1)
     date.rename("date")
-    get_date = eq_const(opcode, GET_DATE, 5)
 
     wd = Mux(arith_op,
              Mux(lui,

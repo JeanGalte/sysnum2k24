@@ -25,9 +25,25 @@ rule lexer = parse
   | "slli" { OPI Sll }
   | "slti" { OPI Slt }
   | "sltiu" { OPI Sltu }
-  | "xori" { OPI Xor }
-  | "srli" { OPI Srl }
-  | "srai" { OPI Sra }
+  | "orw" { OP Or }
+  | "andw" { OP And }
+  | "addw" { OP Add }
+  | "subw" { OP Sub }
+  | "sllw" { OP Sll }
+  | "sltw" { OP Slt }
+  | "sltuw" { OP Sltu }
+  | "xorw" { OP Xor }
+  | "srlw" { OP Srl }
+  | "sraw" { OP Sra }
+  | "oriw" { OPI Or }
+  | "andiw" { OPI And }
+  | "addiw" { OPI Add }
+  | "slliw" { OPI Sll }
+  | "sltiw" { OPI Slt }
+  | "sltiuw" { OPI Sltu }
+  | "xoriw" { OPI Xor }
+  | "srliw" { OPI Srl }
+  | "sraiw" { OPI Sra }
   | "lb" { LOAD 0b000 }
   | "lh" { LOAD 0b001 }
   | "lw" { LOAD 0b010 }
@@ -61,6 +77,7 @@ rule lexer = parse
   | "shour" { SDT 0b011 }
   | "smin" { SDT 0b100 }
   | "ssec" { SDT 0b101 }
+  | "gtck" { GTCK }
   | '-'? ['0' - '9']* as s { IMM (int_of_string s) }
   | ',' { COMMA }
   | '(' { LPAR }
