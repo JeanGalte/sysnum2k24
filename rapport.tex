@@ -22,7 +22,7 @@
 
 \section{Présentation du projet}
 
-Il s'agit d'une implémentation de RISCV. Elle est incomplète : il lui manque l'addition 32 bits (ce qui n'est pas grave, puisqu'on peut l'obtenir en sommant les deux nombres sur 64 bits puis en tronquant), et quelques instructions mineures. Le projet embarque un assembleur, ainsi qu'une petite horloge écrite dans cet assembleur. La gestion de la RAM et du décodeur font l'objet d'un fichier à part entière. La RAM est en mots de 8 octets, l'addressage se fait sur des octets, mais la lecture permet de lire directement 64 bits d'un coup. 
+Il s'agit d'une implémentation de RISCV. Elle est incomplète : il lui manque l'addition 32 bits (ce qui n'est pas grave, puisqu'on peut l'obtenir en sommant les deux nombres sur 64 bits puis en tronquant), et quelques autres instructions (ecall, ebreak, fence, hint, pause). Le projet embarque un assembleur, ainsi qu'une petite horloge écrite dans cet assembleur. La gestion de la RAM et du décodeur font l'objet d'un fichier à part entière. La RAM est en mots de 8 octets, l'addressage se fait sur des octets, mais la lecture permet de lire directement 64 bits d'un coup. 
 
 \section{Unité arithmético logique}
 
@@ -86,7 +86,7 @@ sd   & STORE 0b011 \\
 \end{tabular}
 \end{table}
 
-Pour une spécification plus grande sur l'encodage des instructions, on pourra se référer au manuel d'instructions RISCV5. On ajoute également les fonctions suivantes pour traiter la date :
+Pour une spécification plus grande sur l'encodage des instructions, on pourra se référer au manuel d'instructions RISCV5 (à partir de la page 553). On ajoute également les fonctions suivantes pour traiter la date :
 
 \begin{table}[h!]
 \centering
