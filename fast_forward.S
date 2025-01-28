@@ -1,6 +1,3 @@
-.global main
-.text
-
 # en 0: une valeur qui change entre 0 et 1 toutes les secs
 # 8: sec, 16: min, 24: h, 32:jour  40:mois, 48:ans
 
@@ -10,8 +7,6 @@ main:
 
 verification: # boucle principale
     jal x0, ajout_seconde 
-
-
 
 ajout_seconde: 
     addi x5, x1, 0 
@@ -46,7 +41,7 @@ ajout_heure:
 
 ajout_jour:
     #on regarde le mois
-    gmon
+    gmon x1
     addi  x2, x0, 1 
     beq x2, x1, ajout_jour_31 
     addi  x2,x0, 3 

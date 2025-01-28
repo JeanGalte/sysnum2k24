@@ -150,7 +150,7 @@ def decoder():
 
     # clock
     tick = ROM(1, 64, Constant("0"))
-    tick.rename("tick")
+    tick.set_as_output("tick")
 
     
     date = RAM(3, 64, funct3, set_date, funct3, rd1)
