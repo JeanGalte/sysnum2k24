@@ -1,0 +1,135 @@
+\documentclass{article}
+
+\usepackage{stmaryrd}
+
+\author{
+  Olivier Henry
+  \and
+  Paul Wang  
+  Aghilas Boussa
+  \and
+  Marius Capelli
+}
+\date{}
+
+\title{ Rapport du projet de systèmes numériques}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+
+\section{Unité arithmético logique}
+
+On a codé l'UAL de la façon suivante : 
+\begin{itemize}
+    \item On récupère \texttt{funct75} depuis le bus 7, et \texttt{funct30}, \texttt{funct31}, \texttt{funct32} depuis le bus 3. Ces canaux permettent d'indiquer l'opération à effectuer. 
+    \item On récupère les deux variables (au sens de carotte) \texttt{a} et \texttt{b} sur lesquelles on veut effectuer le calcul. 
+    \item On transforme b suivant que l'opération effectuée s'écrit mieux avec b négatif ou non. On n'a donc pas à écrire de \texttt{sub}, on ajoute simplement \texttt{a} et \texttt{-b}. Idem pour \texttt{slt} et \texttt{sltu}.
+    \item On précalcule les valeurs qui sont souvent utiles : \texttt{a | b}, \texttt{a \& b}, \texttt{a \^ b}, \texttt{a + b}
+    \item On choisit quoi renvoyer suivant ce qu'il y a dans les bus 
+\end{itemize}
+
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{funct3[0]} & \textbf{funct3[1]} & \textbf{funct3[2]} & \textbf{Calcul} \\
+\hline
+0 & 0 & 0 & a + b \\
+0 & 0 & 1 & a $<<$ b \\
+0 & 1 & 0 & a $<$ b \\
+0 & 1 & 1 & a $<$ b (non signé) \\
+1 & 0 & 0 & a \^{} b \\
+1 & 0 & 1 & a $>>$ b (arithmétique) \\
+1 & 1 & 0 & a $|$ b \\
+1 & 1 & 1 & a \& b \\
+\hline
+\end{tabular}
+\caption{Opérations en fonction du bus 3}
+\end{table}
+
+
+
+\newpage
+
+\section{Assembleur}
+
+Le projet embarque un petit assembleur. Ce dernier gère les opérations usuelles (\texttt{|}, \texttt{\&}, \texttt{+}, \texttt{-}, \texttt{<<}, \texttt{$\leq$}, \texttt{$\leq$ (non signé)}, \texttt{\^}, \texttt{>>} ), le branching, une RAM et des registres $x_i$ pour $ i \in \llbracket 0, 31 \rrbracket$. 
+
+Tableau de correspondance d'instructions avec leur code assembeur. 
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Instruction} & \textbf{Code assembleur} \\
+\hline
+lb   & LOAD 0b000 \\
+lh   & LOAD 0b001 \\
+lw   & LOAD 0b010 \\
+ld   & LOAD 0b011 \\
+lbu  & LOAD 0b100 \\
+lhu  & LOAD 0b101 \\
+lwu  & LOAD 0b110 \\
+sb   & STORE 0b000 \\
+sh   & STORE 0b001 \\
+sw   & STORE 0b010 \\
+sd   & STORE 0b011 \\
+\hline
+\end{tabular}
+\end{table}
+
+Pour une spécification plus grande sur l'encodage des instructions, on pourra se référer au manuel d'instructions RISCV5. On ajoute également les fonctions suivantes pour traiter la date :
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Instruction} & \textbf{Encodage} \\
+\hline
+gtk   & \[0\] $\times 20$ ++ \texttt{rd} ++ \[0001011\] \\
+sdt   & \[0\] $\times 12$ ++ \texttt{rs1} ++ \texttt{funct3} ++ \[0101011\] \\
+gdt   & \[0\] $\times 17$ ++ \texttt{funct3} ++ rd ++ \[1011011\] \\
+\hline
+\end{tabular}
+\end{table}
+
+\texttt{gtk} permet de calculer la parité du nombre de seconde, et est utilisée pour "ticker". \texttt{sdt} permet de changer une date, et \texttt{gdt} d'obtenir une date. L'élément traité dans la date est codé par \texttt{funct[3]} : 
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+\textbf{funct[3]} & \textbf{Donnée} \\
+\hline
+000   & année \\
+001  & mois \\
+010  & jour \\
+011  & heure \\
+100  & minute \\
+101  & seconde  \\
+\hline
+\end{tabular}
+\end{table}
+
+
+% GTCK = get_tick (donne la parité du nombre de seconde) 
+% GDAY, GYEAR, etc. permet d'obtenir le jour 
+
+
+
+
+\section{Gestion du décodeur}
+
+
+
+\section{Gestion de la RAM}
+
+La RAM est en mots de 8 octets, l'addressage se fait sur des octets, mais la lecture permet de lire directement 64 bits d'un coup. 
+
+
+
+\end{document}
