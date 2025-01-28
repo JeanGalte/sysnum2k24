@@ -1,18 +1,12 @@
-
-
-# en 0: une valeur qui change entre 0 et 1 toutes les secs
-# 8: sec, 16: min, 24: h, 32:jour  40:mois, 48:ans
-
 main: 
     gtck x5 # on retient en x5 si on a un 0 ou un 1 
 
-#il faut initialiser à l'heure de base stocké en 56,64,72,80,88,96
-
 # on stock le mod 25 de l'année en x6
 #il faut l'initialiser
-    addi x6, x0, 0 #x6: année mod 25
-    gyear x1 # x1: année
-    addi x2, x0, 25 #x2: 25
+
+    addi x6, x0, 0 
+    gyear x1 
+    addi x2, x0, 25 
 compte_mod25:
     addi x6, x6, 1
     addi x1, x1, -1
@@ -26,8 +20,7 @@ fin_25:
 verification: # vérifie si on change de seconde
     gtck x1
     bne x5, x1, ajout_seconde 
-    jal x0, verification  # 
-
+    jal x0, verification  
 
 ajout_seconde: 
     addi x5, x1, 0 
@@ -140,7 +133,6 @@ ajout_jour_28:
     addi x1, x1, 1
     sday x1
     jal x0, verification 
-
 
 ajout_mois:
     #on remet les jours à 1
