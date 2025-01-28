@@ -20,6 +20,10 @@
 
 \newpage
 
+\section{Présentation du projet}
+
+Il s'agit d'une implémentation de RISCV. Elle est incomplète : il lui manque l'addition 32 bits (ce qui n'est pas grave, puisqu'on peut l'obtenir en sommant les deux nombres sur 64 bits puis en tronquant), et quelques instructions mineures. Le projet embarque un assembleur, ainsi qu'une petite horloge écrite dans cet assembleur. La gestion de la RAM et du décodeur font l'objet d'un fichier à part entière. La RAM est en mots de 8 octets, l'addressage se fait sur des octets, mais la lecture permet de lire directement 64 bits d'un coup. 
+
 \section{Unité arithmético logique}
 
 On a codé l'UAL de la façon suivante : 
@@ -118,17 +122,6 @@ gdt   & \[0\] $\times 17$ ++ \texttt{funct3} ++ rd ++ \[1011011\] \\
 
 % GTCK = get_tick (donne la parité du nombre de seconde) 
 % GDAY, GYEAR, etc. permet d'obtenir le jour 
-
-
-
-
-\section{Gestion du décodeur}
-
-
-
-\section{Gestion de la RAM}
-
-La RAM est en mots de 8 octets, l'addressage se fait sur des octets, mais la lecture permet de lire directement 64 bits d'un coup. 
 
 
 
