@@ -139,8 +139,8 @@ ajout_mois:
     addi  x1, x0, 1 
     sday x1
     gmon x1
-    addi  x2, x0, 31
-    beq x2, x1 , ajout_mois
+    addi  x2, x0, 13
+    beq x2, x1 , ajout_ans
     addi x1, x1, 1
     smon x1
     jal x0, verification 
