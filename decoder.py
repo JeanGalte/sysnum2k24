@@ -92,12 +92,13 @@ def decoder():
     pc_change = jal | jalr | auipc | bop
     
     funct3 = Mux(bop, instr[12:15], instr[13:15] + Constant("0"))
-    funct7 = Mux(bop, instr[25:], Constant("0" * 7))
+    funct7 = Mux(bop | ~instr[5], instr[25:], Constant("0" * 7))
     arith_op = eq_const(opcode, ARITH_PREFIX, 3)
 
     lui = eq_const(opcode, LUI, 5)
     big_imm = big_imm_gen(instr)
     small_imm = imm_gen(instr)
+    small_imm.set_as_output("small_imm")
 
     load = eq_const(opcode, LOAD_PREFIX, 5)
 
@@ -120,7 +121,10 @@ def decoder():
         r.set_as_output("r" + str(i))
 
     in2 = Mux(instr[5], small_imm, rd2)
+    rd1.set_as_output("in1")
+    in2.set_as_output("in2")
     alu_out = alu.alu(rd1, in2, funct3, funct7)
+    alu_out.set_as_output("out")
 
     # ram
     ram_write2reg = load
