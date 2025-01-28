@@ -108,7 +108,7 @@ ajout_jour_30:
     #on remet les heures à 0
     shour x0
     gday x1
-    addi  x2, x0, 31
+    addi  x2, x0, 30
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
     sday x1
@@ -118,7 +118,7 @@ ajout_jour_29:
     #on remet les heures à 0
     shour x0
     gday x1
-    addi  x2, x0, 31
+    addi  x2, x0, 29
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
     sday x1
@@ -128,7 +128,7 @@ ajout_jour_28:
     #on remet les heures à 0
     shour x0
     gday x1
-    addi  x2, x0, 31
+    addi  x2, x0, 28
     beq x2, x1 , ajout_mois
     addi x1, x1, 1
     sday x1
