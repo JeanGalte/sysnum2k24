@@ -21,6 +21,9 @@
 %token <Syntax.bop> BOP
 %token <int> STORE
 %token <int> LOAD
+%token GTCK
+%token <int> SDT
+%token <int> GDT
 %token <string> LABEL
 %token LUI AUIPC JAL JALR
 %token COMMA LPAR RPAR DCOL
@@ -51,6 +54,12 @@ instruction:
     { pc := !pc + 4; Lui (x, i) }
   | AUIPC x = REG COMMA i = IMM
     { pc := !pc + 4; Auipc (x, i) }
+  | GTCK x = REG
+    { pc := !pc + 4; Gtck x }
+  | d = SDT x = REG
+    { pc := !pc + 4; Sdt (d, x)}
+  | d = GDT x = REG
+    { pc := !pc + 4; Gdt (d, x)}
 
 program:
   | l = instruction* EOF { l }

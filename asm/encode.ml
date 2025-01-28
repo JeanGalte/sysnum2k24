@@ -62,10 +62,15 @@ let instruction = function
     0b1100111 lor (x1 lsl 7) lor (x2 lsl 15) lor (a lsl 20)
   | Branch (bop, x1, x2, a) ->
     let a = eval_address a in
-    print_int (0b11111 land (a lsr 5));
     0b1100011 lor
     (x1 lsl 15) lor (x2 lsl 20) lor (BOMap.find bop bop_map lsl 12) lor
     ((0b1 land (a lsr 11)) lsl 7) lor
     ((0b1111 land (a lsr 1)) lsl 8) lor
     ((0b111111 land (a lsr 5)) lsl 25) lor
     ((0b1 land (a lsr 12)) lsl 31)
+  | Gtck x ->
+    0b0001011 lor (x lsl 7)
+  | Sdt (d, x) ->
+    0b0101011 lor (x lsl 15) lor (d lsl 12)
+  | Gdt (d, x) ->
+    0b1011011 lor (x lsl 7) lor (d lsl 12)

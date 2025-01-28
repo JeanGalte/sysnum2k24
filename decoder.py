@@ -4,14 +4,18 @@ from utils import *
 import ram
 import alu
 
-ARITH_PREFIX = 0b10011
-LOAD_PREFIX = 0b0000011
-STORE_PREFIX = 0b0100011
-LUI = 0b0110111
-AUIPC = 0b0010111
-JAL = 0b1101111
-JALR = 0b1100111
-BOP = 0b1100011
+ARITH_PREFIX = 0b100
+LOAD_PREFIX = 0b00000
+STORE_PREFIX = 0b01000
+LUI = 0b01101
+AUIPC = 0b00101
+JAL = 0b11011
+JALR = 0b11001
+BOP = 0b11000
+
+GET_TICK = 0b00010
+SET_DATE = 0b01010
+GET_DATE = 0b10110
 
 # À modifier quand on aura fait l'ALU
 def full_adder(a: Variable, b: Variable, c: Variable) -> typing.Tuple[Variable, Variable]:
@@ -73,27 +77,31 @@ def decoder():
 
 
     instr = ROM(14, 32, pc[2:])
-    opcode = instr[0:7]
+    instr.rename("prog")
+    opcode = instr[2:7]
 
     rr1 = instr[15:20]
     rr2 = instr[20:25]
     wr = instr[7:12]
-    bop = eq_const(opcode, BOP, 7)
+    bop = eq_const(opcode, BOP, 5)
 
-    jal  = eq_const(opcode, JAL, 7)
-    jalr = eq_const(opcode, JALR, 7)
-    auipc = eq_const(opcode, AUIPC, 7)
+    jal  = eq_const(opcode, JAL, 5)
+    jalr = eq_const(opcode, JALR, 5)
+    auipc = eq_const(opcode, AUIPC, 5)
     write_pc_plus4 = jal | jalr
     pc_change = jal | jalr | auipc | bop
     
     funct3 = Mux(bop, instr[12:15], instr[13:15] + Constant("0"))
     funct7 = Mux(bop, instr[25:], Constant("0" * 7))
+    arith_op = eq_const(opcode, ARITH_PREFIX, 3)
 
-    lui = eq_const(opcode, LUI, 7)
+    lui = eq_const(opcode, LUI, 5)
     big_imm = big_imm_gen(instr)
     small_imm = imm_gen(instr)
+
+    load = eq_const(opcode, LOAD_PREFIX, 5)
     
-    rw = eq_const(opcode, ARITH_PREFIX, 5) | lui | eq_const(opcode, LOAD_PREFIX, 7) | write_pc_plus4
+    rw = arith_op | lui | load | write_pc_plus4
     # registers
     bigone = Constant("1" * 64)
     bigzero = Constant("0" * 64)
@@ -111,8 +119,8 @@ def decoder():
     alu_out = alu.alu(rd1, in2, funct3, funct7)
 
     # ram
-    ram_write2reg = eq_const(opcode, LOAD_PREFIX, 7)
-    ram_write_en = eq_const(opcode, STORE_PREFIX, 7)
+    ram_write2reg = load
+    ram_write_en = eq_const(opcode, STORE_PREFIX, 5)
 
     ram_word_size = instr[12:14]
     ram_sign_extend = Not(instr[15])
@@ -136,9 +144,23 @@ def decoder():
                    jal_imm(instr)),
                big_imm)[:16]
 
-    wd = multimux([lui, ram_write2reg, write_pc_plus4],
-                  [alu_out, big_imm, ram_out, Constant("0" * 64),
-                   pc_plus4 + Constant("0" * 48)])
+    # clock
+    get_tick = eq_const(opcode, GET_TICK, 5)
+    tick = ROM(1, 64, Constant("0"))
+    tick.rename("tick")
+
+    set_date = eq_const(opcode, SET_DATE, 5)
+    date = RAM(3, 64, funct3, set_date, funct3, rd1)
+    date.rename("date")
+    get_date = eq_const(opcode, GET_DATE, 5)
+
+    wd = Mux(arith_op,
+             Mux(lui,
+                 Mux(ram_write2reg,
+                     Mux(write_pc_plus4,
+                         Mux(get_date, tick, date),
+                         pc_plus4 + Constant("0" * 48)),
+                     ram_out), big_imm), alu_out)
 
 def main():
     allow_ribbon_logic_operations(True)

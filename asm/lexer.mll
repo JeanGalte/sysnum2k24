@@ -49,6 +49,18 @@ rule lexer = parse
   | "jalr" { JALR }
   | "lui" { LUI }
   | "auipc" { AUIPC }
+  | "gyear" { GDT 0b000 }
+  | "gmon" { GDT 0b001 }
+  | "gday" { GDT 0b010 }
+  | "ghour" { GDT 0b011 }
+  | "gmin" { GDT 0b100 }
+  | "gsec" { GDT 0b101 }
+  | "syear" { SDT 0b000 }
+  | "smon" { SDT 0b001 }
+  | "sday" { SDT 0b010 }
+  | "shour" { SDT 0b011 }
+  | "smin" { SDT 0b100 }
+  | "ssec" { SDT 0b101 }
   | '-'? ['0' - '9']* as s { IMM (int_of_string s) }
   | ',' { COMMA }
   | '(' { LPAR }

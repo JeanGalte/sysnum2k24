@@ -18,3 +18,6 @@ type instruction
   | Jal of reg * address
   | Jalr of reg * reg * address
   | Nop
+  | Gtck of reg
+  | Sdt of int * reg
+  | Gdt of int * reg
