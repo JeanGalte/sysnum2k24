@@ -65,11 +65,12 @@ def bop_imm(instr):
     extension = instr[31]
     for _ in range(6):
         extension = extension + extension
-    return Constant("0") + instr[8:12] + instr[25:30] + instr[7] + extension[:53]
+    return Constant("0") + instr[8:12] + instr[25:31] + instr[7] + extension[:52]
 
 def decoder():
     pc = Reg(Defer(16, lambda: Mux(pc_change, pc_plus4, adder(pc, incr, Constant("0"))[0])))
     pc_plus4 = adder(pc, Constant ("0" * 13 + "100"), Constant("0"))[0]
+
 
     instr = ROM(14, 32, pc[2:])
     opcode = instr[0:7]
@@ -83,10 +84,10 @@ def decoder():
     jalr = eq_const(opcode, JALR, 7)
     auipc = eq_const(opcode, AUIPC, 7)
     write_pc_plus4 = jal | jalr
-    pc_change = jal | jalr | auipc
+    pc_change = jal | jalr | auipc | bop
     
     funct3 = Mux(bop, instr[12:15], instr[13:15] + Constant("0"))
-    funct7 = instr[25:]
+    funct7 = Mux(bop, instr[25:], Constant("0" * 7))
 
     lui = eq_const(opcode, LUI, 7)
     big_imm = big_imm_gen(instr)
@@ -99,7 +100,7 @@ def decoder():
     rr1_array = [bigzero] + [Mux(eq_const(rr1, i, 5), bigzero, bigone) for i in range(1, 32)]
     rr2_array = [bigzero] + [Mux(eq_const(rr2, i, 5), bigzero, bigone) for i in range(1, 32)]
     wr_array = [eq_const(wr, i, 5) & rw for i in range(32)]
-    regs = [Reg(Defer(64, lambda i=i: Mux(wr_array[i], regs[i], wd))) for i in range(32)]
+    regs = [bigzero] + [Reg(Defer(64, lambda i=i: Mux(wr_array[i], regs[i], wd))) for i in range(1, 32)]
     rd1 = or_reduce([regs[i] & rr1_array[i] for i in range(32)])
     rd2 = or_reduce([regs[i] & rr2_array[i] for i in range(32)])
 
@@ -124,16 +125,14 @@ def decoder():
                               ram_write_addr[:16], rd2)
 
     # jump
-    
     reg_eq = eq(rd1, rd2)
     cmp_res = Mux(eq_const(instr[13:15], 0b00, 2), alu_out[0], reg_eq) ^ instr[12]
-    
     
     incr = Mux(auipc,
                Mux(jal,
                    Mux(bop,
-                       Mux(cmp_res, Constant("0" * 61 + "100"), bop_imm(instr)),
-                       adder(small_imm, rd1, Constant("0"))[0]),
+                       adder(small_imm, rd1, Constant("0"))[0],
+                       Mux(cmp_res, Constant("0" * 61 + "100"), bop_imm(instr))),
                    jal_imm(instr)),
                big_imm)[:16]
 

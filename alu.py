@@ -82,11 +82,13 @@ def sral(a:Variable, b:Variable, funct7:Variable) -> Variable:
 
 def slt(a:Variable, b:Variable, aminusb:Variable) -> Variable:
   '''if a<b then 1 else 0'''
-  return Constant("0"*(a.bus_size-1)) + ((a[0] & ~b[0]) | (~(a[0]^b[0]) & aminusb[0]))
+  return ((a[a.bus_size-1] & ~b[a.bus_size-1]) |
+          (~(a[a.bus_size - 1]^b[a.bus_size - 1]) & aminusb[a.bus_size -1])) + Constant("0"*(a.bus_size-1))
 
 def sltu(a:Variable, b:Variable, aminusb:Variable) -> Variable:
   '''if a<b then 1 else 0'''
-  return Constant("0"*(a.bus_size-1)) + ((~a[0] & b[0]) | (~(a[0]^b[0]) & aminusb[0]))
+  return ((a[a.bus_size-1] & ~b[a.bus_size-1]) |
+          (~(a[a.bus_size - 1]^b[a.bus_size - 1]) & aminusb[a.bus_size -1])) + Constant("0"*(a.bus_size-1))
 
 def alu(a:Variable, b:Variable, funct3:Variable, funct7:Variable) -> Variable:
   funct75 = funct7[5]
