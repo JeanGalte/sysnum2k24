@@ -18,3 +18,6 @@ mkdir rom
 mv out rom/prog
 ./netlist_simulator -c decoder.net
 gcc -O2 -w out.c -o horloge -lpthread -lncurses
+
+./netlist_simulator -c -f decoder.net
+gcc -O2 -w out.c -o fast -lpthread -lncurses

@@ -1,6 +1,10 @@
 # Un magnifique processeur !
 ## Instruction de compilation
-On peut récupérer le code avec : `git clone --recurse-submodules -j8 https://github.com/JeanGalte/sysnum2k24.git` et le compiler avec `./build.sh`. Cela crée un exécutable `horloge` qui lance le programme contenu dans `rom/prog` qui peut être assemblé avec `erasm`. Par défaut, il contient une horloge.
+On peut récupérer le code avec : `git clone --recurse-submodules -j8
+https://github.com/JeanGalte/sysnum2k24.git` et le compiler avec
+`./build.sh`. Cela crée deux exécutables `horloge` qui lance le programme
+contenu dans `rom/prog` qui contient une horloge et `fast` qui exécute cette
+même horloge mais en mode rapide.
 ## Assembleur
 Le répertoire `asm` contient un assembleur pour notre processeur. Il a une fonctionnalité de simulateur, à condition de ne pas utiliser `lui`, `auipc`, les branchements et sauts et des opérations en mémoire sur autre chose que 64 bits.
 
