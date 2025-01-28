@@ -14,7 +14,7 @@ compte_mod25:
     addi x6, x0, 0
 passe_25:
     beq x1, x0, fin_25
-    jal compte_mod25
+    jal x0, compte_mod25
 fin_25:
 
 verification: # vérifie si on change de seconde
@@ -55,7 +55,7 @@ ajout_heure:
 
 ajout_jour:
     #on regarde le mois
-    gmon
+    gmon x1
     addi  x2, x0, 1 
     beq x2, x1, ajout_jour_31 
     addi  x2,x0, 3 

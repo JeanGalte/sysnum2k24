@@ -13,7 +13,7 @@ compte_mod25:
     addi x6, x0, 0
 passe_25:
     beq x1, x0, fin_25
-    jal compte_mod25
+    jal x0, compte_mod25
 fin_25:
 
 verification: # boucle principale
