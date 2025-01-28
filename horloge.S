@@ -26,7 +26,7 @@ ajout_seconde:
     addi x5, x1, 0 
     # si on est à 60s
     gsec x1
-    addi  x2, x0, 60  
+    addi  x2, x0, 59
     beq x2, x1 , ajout_minute 
     addi x1, x1, 1
     ssec x1 
@@ -37,7 +37,7 @@ ajout_minute:
     #on remet les sec à 0
     ssec x0
     gmin x1
-    addi  x2, x0, 60  
+    addi  x2, x0, 59
     beq x2, x1 , ajout_heure
     addi x1, x1, 1
     smin x1 
@@ -47,7 +47,7 @@ ajout_heure:
     #on remet les minutes à 0
     smin x0
     ghour x1 
-    addi  x2, x0, 24  
+    addi  x2, x0, 23
     beq x2, x1 , ajout_jour 
     addi x1, x1, 1
     shour x1 
@@ -139,7 +139,7 @@ ajout_mois:
     addi  x1, x0, 1 
     sday x1
     gmon x1
-    addi  x2, x0, 13
+    addi  x2, x0, 12
     beq x2, x1 , ajout_ans
     addi x1, x1, 1
     smon x1
