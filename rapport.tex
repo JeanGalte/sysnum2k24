@@ -31,7 +31,7 @@ On a codé l'UAL de la façon suivante :
     \item On récupère \texttt{funct75} depuis le bus 7, et \texttt{funct30}, \texttt{funct31}, \texttt{funct32} depuis le bus 3. Ces canaux permettent d'indiquer l'opération à effectuer. 
     \item On récupère les deux variables (au sens de carotte) \texttt{a} et \texttt{b} sur lesquelles on veut effectuer le calcul. 
     \item On transforme b suivant que l'opération effectuée s'écrit mieux avec b négatif ou non. On n'a donc pas à écrire de \texttt{sub}, on ajoute simplement \texttt{a} et \texttt{-b}. Idem pour \texttt{slt} et \texttt{sltu}.
-    \item On précalcule les valeurs qui sont souvent utiles : \texttt{a | b}, \texttt{a \& b}, \texttt{a \^ b}, \texttt{a + b}
+    \item On les valeurs pouvant être choisies par l'ULA : \texttt{a | b}, \texttt{a \& b}, \texttt{a \^ b}, \texttt{a + b}
     \item On choisit quoi renvoyer suivant ce qu'il y a dans les bus 
 \end{itemize}
 
@@ -63,7 +63,7 @@ On a codé l'UAL de la façon suivante :
 
 Le projet embarque un petit assembleur. Ce dernier gère les opérations usuelles (\texttt{|}, \texttt{\&}, \texttt{+}, \texttt{-}, \texttt{<<}, \texttt{$\leq$}, \texttt{$\leq$ (non signé)}, \texttt{\^}, \texttt{>>} ), le branching, une RAM et des registres $x_i$ pour $ i \in \llbracket 0, 31 \rrbracket$. 
 
-Tableau de correspondance d'instructions avec leur code assembeur. 
+Tableau de correspondance d'instructions particulières  avec leur code assembeur: 
 
 \begin{table}[h!]
 \centering
