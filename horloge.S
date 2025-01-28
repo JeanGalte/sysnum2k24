@@ -151,7 +151,7 @@ ajout_ans:
     smon x1
     gyear x1
     addi x1, x1, 1
-    syear x1 #on stock les années en 6
+    syear x1 
     #on augment le mod 25
     addi x6, x6, 1
     addi  x2, x0, 25
