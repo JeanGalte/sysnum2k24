@@ -128,6 +128,8 @@
 			\hline
 			\cellcolor{ULMjaune} \color{ULMviolet} Autre & lui, auipc \\
 			\hline
+			\cellcolor{ULMjaune} \color{ULMviolet} Horloge & gtck, gdt, sdt \\
+			\hline
 		\end{tabular}
 	\end{frame}
 	
@@ -168,10 +170,16 @@
 	\codeframeline{Données à écrire}{67}{77}{../ram.py}
 	\codeframeline{Modules}{80}{89}{../ram.py}
 	
-	\section{Programme}
+	\section{Horloge}
 	
-	\begin{frame}{RISC V}
-		
+	\begin{frame}{Fonctionnalités}
+		\begin{itemize}
+			\item Compte les secondes, minutes, heures, jours (dans le mois), mois, années
+			\item Ne compte pas les jours dans la semaine
+			\item Ne compte pas les changements d'heure
+		\end{itemize}
 	\end{frame}
+	
+	\codeframeline{Programme}{20}{33}{../horloge.S}
 	
 \end{document}
