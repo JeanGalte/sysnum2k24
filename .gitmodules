@@ -1,0 +1,6 @@
+[submodule "netlist-simulator"]
+	path = netlist-simulator
+	url = https://github.com/4y8/netlist-simulator.git
+[submodule "carotte.py"]
+	path = carotte.py
+	url = https://github.com/TWal/carotte.py.git

@@ -33,43 +33,45 @@ let bop_map =
 let eval_address (n, r) =
   !r - n
 
-let instruction = function
-  | Op (op, x1, x2, x3) ->
-    0b0110011 lor (x3 lsl 7) lor (OMap.find op funct3 lsl 12) lor
-    (x1 lsl 15) lor (x2 lsl 20) lor
-    ((OMap.find_opt op funct7 |> Option.value ~default:0) lsl 25)
-  | Opi (op, x1, i, x3) ->
-    0b0010011 lor (x3 lsl 7) lor (OMap.find op funct3 lsl 12) lor
-    (x1 lsl 15) lor (i lsl 20)
-  | Load (size, i, x1, x3) ->
-    0b0000011 lor (x3 lsl 7) lor (size lsl 12) lor (x1 lsl 15) lor (i lsl 20)
-  | Store (size, x2, i, x1) ->
-    0b0100011 lor ((i land 0b111) lsl 7) lor (size lsl 12) lor (x1 lsl 15) lor
-    (x2 lsl 20) lor ((i lsr 4) lsl 25)
-  | Nop -> -1
-  | Lui (x, i) ->
-    0b0110111 lor (x lsl 7) lor (i lsl 12)
-  | Auipc (x, i) ->
-    0b0010111 lor (x lsl 7) lor (i lsl 12)
-  | Jal (x, a) ->
-    let a = eval_address a in
-    0b1101111 lor (x lsl 7) lor ((0b11111111 lsl 12) land a) lor
-    ((0b1 land (a lsr 11)) lsl 20) lor ((0b11111111110 land a) lsl 20) lor
-    ((0b1 land (a lsr 20)) lsl 31)
-  | Jalr (x1, x2, a) ->
-    let a = eval_address a in
-    0b1100111 lor (x1 lsl 7) lor (x2 lsl 15) lor (a lsl 20)
-  | Branch (bop, x1, x2, a) ->
-    let a = eval_address a in
-    0b1100011 lor
-    (x1 lsl 15) lor (x2 lsl 20) lor (BOMap.find bop bop_map lsl 12) lor
-    ((0b1 land (a lsr 11)) lsl 7) lor
-    ((0b1111 land (a lsr 1)) lsl 8) lor
-    ((0b111111 land (a lsr 5)) lsl 25) lor
-    ((0b1 land (a lsr 12)) lsl 31)
-  | Gtck x ->
-    0b0001011 lor (x lsl 7)
-  | Sdt (d, x) ->
-    0b0101011 lor (x lsl 15) lor (d lsl 12)
-  | Gdt (d, x) ->
-    0b1011011 lor (x lsl 7) lor (d lsl 12)
+let instruction i = match i with
+    Nop -> None
+  | _ -> Some (match i with
+      | Op (op, x1, x2, x3) ->
+        0b0110011 lor (x3 lsl 7) lor (OMap.find op funct3 lsl 12) lor
+        (x1 lsl 15) lor (x2 lsl 20) lor
+        ((OMap.find_opt op funct7 |> Option.value ~default:0) lsl 25)
+      | Opi (op, x1, i, x3) ->
+        0b0010011 lor (x3 lsl 7) lor (OMap.find op funct3 lsl 12) lor
+        (x1 lsl 15) lor (i lsl 20)
+      | Load (size, i, x1, x3) ->
+        0b0000011 lor (x3 lsl 7) lor (size lsl 12) lor (x1 lsl 15) lor (i lsl 20)
+      | Store (size, x2, i, x1) ->
+        0b0100011 lor ((i land 0b111) lsl 7) lor (size lsl 12) lor (x1 lsl 15) lor
+        (x2 lsl 20) lor ((i lsr 4) lsl 25)
+      | Lui (x, i) ->
+        0b0110111 lor (x lsl 7) lor (i lsl 12)
+      | Auipc (x, i) ->
+        0b0010111 lor (x lsl 7) lor (i lsl 12)
+      | Jal (x, a) ->
+        let a = eval_address a in
+        0b1101111 lor (x lsl 7) lor ((0b11111111 lsl 12) land a) lor
+        ((0b1 land (a lsr 11)) lsl 20) lor ((0b11111111110 land a) lsl 20) lor
+        ((0b1 land (a lsr 20)) lsl 31)
+      | Jalr (x1, x2, a) ->
+        let a = eval_address a in
+        0b1100111 lor (x1 lsl 7) lor (x2 lsl 15) lor (a lsl 20)
+      | Branch (bop, x1, x2, a) ->
+        let a = eval_address a in
+        0b1100011 lor
+        (x1 lsl 15) lor (x2 lsl 20) lor (BOMap.find bop bop_map lsl 12) lor
+        ((0b1 land (a lsr 11)) lsl 7) lor
+        ((0b1111 land (a lsr 1)) lsl 8) lor
+        ((0b111111 land (a lsr 5)) lsl 25) lor
+        ((0b1 land (a lsr 12)) lsl 31)
+      | Gtck x ->
+        0b0001011 lor (x lsl 7)
+      | Sdt (d, x) ->
+        0b0101011 lor (x lsl 15) lor (d lsl 12)
+      | Gdt (d, x) ->
+        0b1011011 lor (x lsl 7) lor (d lsl 12)
+      | Nop -> failwith "impossible")
